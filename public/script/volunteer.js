@@ -127,11 +127,10 @@ form.addEventListener('submit', async (event) => {
             horas_semanais: form.horas_semanais.value,
             tempo_atuacao: form.tempo_atuacao.value,
             horarios_disponiveis: form.horarios_disponiveis.value,
-            motivacao: form.motivacao.value,
-            ganhos_pessoais: form.ganhos_pessoais.value,
 
             referencias: referenciasArray,
             termo_lei_aceito: form.termo_lei.checked,
+            termo_veracidade_aceito: form.termo_veracidade.checked,
             data_inscricao: new Date(),
             status: 'pendente'
         };
