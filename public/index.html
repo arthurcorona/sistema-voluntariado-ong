@@ -101,14 +101,6 @@
                         <label for="horarios_disponiveis">Quais seus horários disponíveis?</label>
                         <textarea id="horarios_disponiveis" name="horarios_disponiveis" rows="3" placeholder="Ex: Segundas (manhã), Quartas (14h-18h)..."></textarea>
                     </div>
-                    <div class="form-group">
-                        <label for="motivacao">Por que quer trabalhar como voluntário aqui?</label>
-                        <textarea id="motivacao" name="motivacao" rows="4"></textarea>
-                    </div>
-                    <div class="form-group">
-                        <label for="ganhos_pessoais">Quais os ganhos pessoais que gostaria de obter?</label>
-                        <textarea id="ganhos_pessoais" name="ganhos_pessoais" rows="4"></textarea>
-                    </div>
                 </fieldset>
 
                 <fieldset>
@@ -126,24 +118,32 @@
                         + Adicionar outra referência
                     </button>
                 </fieldset>
-                
-                <div class="form-group-checkbox">
-                    <input type="checkbox" id="termo_lei" name="termo_lei" required>
-                    <label for="termo_lei" class="required">
-                        Li e concordo com os termos da 
-                        <a href="http://www.planalto.gov.br/ccivil_03/leis/l9608.htm" target="_blank" rel="noopener noreferrer">Lei do Voluntariado (Lei nº 9.608/98)</a>.
-                    </label>
-                </div>
 
-                <button type="submit" class="submit-button">Enviar Inscrição</button>
-            </form>
+        
+            <div class="form-group-checkbox">
+                <input type="checkbox" id="termo_veracidade" name="termo_veracidade" required>
+                <label for="termo_veracidade" class="required">
+                    Declaro que as informações acima são verdadeiras e que compreendo que o
+                    voluntário é uma atividade não remunerada.
+                </label>
+            </div>
+
+            <div class="form-group-checkbox">
+                <input type="checkbox" id="termo_lei" name="termo_lei" required>
+                <label for="termo_lei" class="required">
+                    Li e concordo com os termos da 
+                    <a href="http://www.planalto.gov.br/ccivil_03/leis/l9608.htm" target="_blank" rel="noopener noreferrer">Lei do Voluntariado (Lei nº 9.608/98)</a>.
+                </label>
+            </div>
+
+            <button type="submit" class="submit-button">Enviar Inscrição</button>
+        </form>
             <p id="success-message" style="display:none;">Inscrição enviada com sucesso! Obrigado.</p>
         </div>
     </main>
 
     <footer class="site-footer">
         <div class="container">
-            <p>© 2025 - Desenvolvido por [Seu Nome] como um projeto para a Rede ALSA.</p>
             <div class="social-links">
                 <a href="https://larsementedoamor.org.br" target="_blank" rel="noopener noreferrer">
                     <i class="fas fa-globe"></i> Website Oficial

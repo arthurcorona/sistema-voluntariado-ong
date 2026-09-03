@@ -1,7 +1,6 @@
 const {onDocumentCreated} = require("firebase-functions/v2/firestore");
 const admin = require("firebase-admin");
 const sgMail = require("@sendgrid/mail");
-
 admin.initializeApp();
 
 const SENDGRID_KEY = process.env.SENDGRID_KEY;
@@ -24,7 +23,7 @@ exports.onNewVolunteer = onDocumentCreated(
       const msg = {
         to: "emailreceptor@email.com",
         from: "emailsender@email.com", // email verificado do SendGrid
-        subject: "🔔 Novo Voluntário Inscrito - Rede ALSA",
+        subject: "🔔 Novo Voluntário Inscrito",
         html: `
       <p>Olá Admin,</p>
       <p>Um novo voluntário acabou de se inscrever no portal!</p>
