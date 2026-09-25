@@ -31,73 +31,89 @@ export function Visualizador({ lancamentoId, anexos, bloqueado }: { lancamentoId
   }
 
   return (
-    <div className="flex h-full flex-col gap-2">
-      <div className="flex flex-wrap items-center gap-1">
-        {anexos.map((a, i) => (
-          <button
-            key={a.id}
-            type="button"
-            onClick={() => setAtivo(i)}
-            className={cn(
-              'max-w-56 truncate rounded-md border px-2 py-1 text-xs',
-              i === ativo ? 'border-blue-600 bg-blue-50 text-blue-900' : 'border-zinc-200 bg-white text-zinc-700 hover:bg-zinc-50',
-            )}
-            title={a.nome_original}
-          >
-            {a.nome_original}
-          </button>
-        ))}
-        {!bloqueado && (
-          <Button size="sm" variant="ghost" onClick={() => setAdicionando((v) => !v)}>
-            {adicionando ? 'Fechar' : '+ arquivo'}
-          </Button>
-        )}
-      </div>
-
-      {adicionando && (
-        <Uploader
-          compacto
-          lancamentoId={lancamentoId}
-          onConcluido={() => {
-            setAdicionando(false);
-            router.refresh();
-          }}
-        />
-      )}
-
+    <div className="flex min-h-0 flex-col gap-3">
       {anexo ? (
-        <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-lg border border-zinc-200 bg-zinc-100">
-          <div className="flex min-h-0 flex-1 items-stretch justify-center">
-            {ehPdf(anexo.mime_type) && <iframe title={anexo.nome_original} src={`${anexo.url}#toolbar=0&navpanes=0`} className="h-full w-full" />}
-            {ehImagem(anexo.mime_type) && (
-              <div className="h-full w-full overflow-auto p-2">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={anexo.url} alt={anexo.nome_original} className="mx-auto max-w-full" />
-              </div>
-            )}
-            {ehXml(anexo.mime_type) && <ResumoXml anexo={anexo} />}
+        <>
+          <div className="plate flex min-h-0 flex-1 flex-col overflow-hidden">
+            <div className="flex min-h-0 flex-1 items-stretch justify-center">
+              {ehPdf(anexo.mime_type) && <iframe title={anexo.nome_original} src={`${anexo.url}#toolbar=0&navpanes=0`} className="h-full w-full" />}
+              {ehImagem(anexo.mime_type) && (
+                <div className="h-full w-full overflow-auto p-2">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={anexo.url} alt={anexo.nome_original} className="mx-auto max-w-full" />
+                </div>
+              )}
+              {ehXml(anexo.mime_type) && <ResumoXml anexo={anexo} />}
+            </div>
           </div>
-          <div className="flex items-center justify-between gap-2 border-t border-zinc-200 bg-white px-3 py-1.5 text-xs text-zinc-600">
-            <span className="truncate">
+          <div className="flex items-center gap-2 text-[13px] text-neutral-700">
+            <span className="truncate tabular-nums">
               {anexo.nome_original} · {formatarTamanho(anexo.tamanho_bytes)}
             </span>
-            <span className="flex shrink-0 gap-3">
-              <a href={anexo.url} target="_blank" rel="noreferrer" className="text-blue-700 hover:underline">
+            <span className="ml-auto flex shrink-0 items-center gap-1">
+              <a href={anexo.url} target="_blank" rel="noreferrer" className="rounded-md px-2.5 py-1.5 font-semibold text-accent-700 hover:bg-accent-500/10">
                 Abrir em nova aba
               </a>
               {!bloqueado && (
-                <button type="button" disabled={pending} onClick={() => remover(anexo.id)} className="text-red-700 hover:underline">
+                <button
+                  type="button"
+                  disabled={pending}
+                  onClick={() => remover(anexo.id)}
+                  className="rounded-md px-2.5 py-1.5 font-semibold text-danger-800 hover:bg-danger-100 disabled:opacity-45"
+                >
                   Remover
                 </button>
               )}
             </span>
           </div>
-        </div>
+        </>
       ) : (
-        <div className="flex flex-1 items-center justify-center rounded-lg border border-dashed border-zinc-300 bg-zinc-50 p-8 text-sm text-zinc-500">
-          Este lançamento não tem arquivo. Use &quot;+ arquivo&quot; para anexar.
+        <div className="plate flex min-h-[280px] flex-1 items-center justify-center p-8 text-center text-sm text-neutral-700">
+          Este lançamento não tem arquivo. Anexe um documento abaixo ou preencha os dados à mão.
         </div>
       )}
+
+      <div className="shrink-0">
+        <div className="kicker mb-2">Anexos vinculados</div>
+        <div className="flex max-h-40 flex-col gap-1.5 overflow-auto">
+          {anexos.map((a, i) => (
+            <button
+              key={a.id}
+              type="button"
+              onClick={() => setAtivo(i)}
+              aria-pressed={i === ativo}
+              className={cn(
+                'flex items-center justify-between gap-3 rounded-md border px-3 py-2 text-left text-sm tabular-nums',
+                i === ativo ? 'border-accent-500 bg-accent-100 text-accent-900' : 'border-divider hover:bg-neutral-200',
+              )}
+              title={a.nome_original}
+            >
+              <span className="truncate">{a.nome_original}</span>
+              <span className="shrink-0 text-neutral-700">{formatarTamanho(a.tamanho_bytes)}</span>
+            </button>
+          ))}
+          {!bloqueado && !adicionando && (
+            <Button size="sm" variant="ghost" className="w-fit" onClick={() => setAdicionando(true)}>
+              Adicionar arquivo
+            </Button>
+          )}
+        </div>
+        {adicionando && (
+          <div className="mt-2">
+            <Uploader
+              compacto
+              lancamentoId={lancamentoId}
+              onConcluido={() => {
+                setAdicionando(false);
+                router.refresh();
+              }}
+            />
+            <Button size="sm" variant="ghost" className="mt-1" onClick={() => setAdicionando(false)}>
+              Fechar
+            </Button>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
@@ -105,10 +121,10 @@ export function Visualizador({ lancamentoId, anexos, bloqueado }: { lancamentoId
 function ResumoXml({ anexo }: { anexo: AnexoComUrl }) {
   const d = anexo.dados;
   return (
-    <div className="w-full overflow-auto p-4 text-sm">
-      <p className="mb-3 font-medium text-zinc-800">XML de nota fiscal eletrônica</p>
+    <div className="w-full overflow-auto p-5 text-sm">
+      <p className="mb-3 text-[15px] font-semibold">XML de nota fiscal eletrônica</p>
       {d ? (
-        <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1">
+        <dl className="grid grid-cols-[auto_1fr] gap-x-5 gap-y-1.5">
           {d.nome_emitente && <Linha k="Emitente" v={d.nome_emitente} />}
           {d.cnpj_emitente && <Linha k="CNPJ/CPF" v={formatarDocumento(d.cnpj_emitente)} />}
           {d.numero && <Linha k="Número" v={d.numero + (d.serie ? ` · série ${d.serie}` : '')} />}
@@ -117,7 +133,7 @@ function ResumoXml({ anexo }: { anexo: AnexoComUrl }) {
           {d.chave && <Linha k="Chave" v={d.chave} mono />}
         </dl>
       ) : (
-        <p className="text-zinc-600">Não foi possível ler este XML como NF-e. Preencha os campos manualmente.</p>
+        <p className="text-neutral-700">Não foi possível ler este XML como NF-e. Preencha os campos manualmente.</p>
       )}
     </div>
   );
@@ -126,8 +142,8 @@ function ResumoXml({ anexo }: { anexo: AnexoComUrl }) {
 function Linha({ k, v, mono }: { k: string; v: string; mono?: boolean }) {
   return (
     <>
-      <dt className="text-zinc-500">{k}</dt>
-      <dd className={cn('text-zinc-900', mono && 'break-all font-mono text-xs')}>{v}</dd>
+      <dt className="text-neutral-700">{k}</dt>
+      <dd className={cn('text-ink', mono && 'break-all font-mono text-xs')}>{v}</dd>
     </>
   );
 }

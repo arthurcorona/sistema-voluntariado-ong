@@ -1,19 +1,26 @@
 import type { ReactNode } from 'react';
 import { cn } from '@/lib/cn';
 
-type Tone = 'zinc' | 'amber' | 'red' | 'blue' | 'green';
+type Tone = 'neutral' | 'accent' | 'muted' | 'alert' | 'danger';
 
+/* Etiquetas em caixa alta com traço, como no mockup. */
 const TONES: Record<Tone, string> = {
-  zinc: 'bg-zinc-100 text-zinc-700',
-  amber: 'bg-amber-100 text-amber-800',
-  red: 'bg-red-100 text-red-800',
-  blue: 'bg-blue-100 text-blue-800',
-  green: 'bg-green-100 text-green-800',
+  neutral: 'border-neutral-400 text-neutral-800',
+  accent: 'border-accent-500 text-accent-800',
+  muted: 'border-neutral-400 bg-neutral-200 text-neutral-800',
+  alert: 'border-accent-500 bg-accent-100 text-accent-900',
+  danger: 'border-danger-500 text-danger-800',
 };
 
-export function Badge({ tone = 'zinc', children, className }: { tone?: Tone; children: ReactNode; className?: string }) {
+export function Badge({ tone = 'neutral', children, className }: { tone?: Tone; children: ReactNode; className?: string }) {
   return (
-    <span className={cn('inline-flex items-center whitespace-nowrap rounded px-1.5 py-0.5 text-xs font-medium', TONES[tone], className)}>
+    <span
+      className={cn(
+        'inline-block whitespace-nowrap rounded-sm border px-2 py-[3px] text-[11px] uppercase leading-tight tracking-[0.04em]',
+        TONES[tone],
+        className,
+      )}
+    >
       {children}
     </span>
   );

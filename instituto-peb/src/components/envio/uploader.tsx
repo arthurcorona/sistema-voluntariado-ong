@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { registrarUpload, verificarDuplicado } from '@/actions/anexos';
 import { Alert } from '@/components/ui/alert';
-import { Button } from '@/components/ui/button';
+import { Button, buttonClass } from '@/components/ui/button';
 import { formatarTamanho, gerarCaminho, validarArquivo } from '@/lib/arquivos';
 import { cn } from '@/lib/cn';
 import { createClient } from '@/lib/supabase/client';
@@ -176,9 +176,12 @@ export function Uploader({
   }
 
   const primeiroNovo = concluidos.find((i) => !i.agrupado)?.lancamentoId ?? concluidos[0]?.lancamentoId;
+  const prontos = itens.filter((i) => ['concluido', 'duplicado'].includes(i.status)).length;
+  const falhas = itens.filter((i) => i.status === 'erro').length;
+  const resumoFila = falhas > 0 ? `${prontos} de ${itens.length} enviados · ${falhas} ${falhas === 1 ? 'falhou' : 'falharam'}` : `${itens.length} ${itens.length === 1 ? 'arquivo' : 'arquivos'} · ${prontos} prontos`;
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-6">
       <div
         role="button"
         tabIndex={0}
@@ -196,16 +199,20 @@ export function Uploader({
           adicionar(e.dataTransfer.files);
         }}
         className={cn(
-          'flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed text-center transition-colors',
-          compacto ? 'p-4' : 'p-10',
-          arrastando ? 'border-blue-500 bg-blue-50' : 'border-zinc-300 bg-white hover:border-zinc-400',
+          'flex cursor-pointer flex-col items-center justify-center rounded-md border border-dashed text-center transition-colors',
+          compacto ? 'px-4 py-5' : 'px-4 py-9',
+          arrastando ? 'border-2 border-accent-500 bg-accent-100' : 'border-neutral-500 bg-neutral-100 hover:border-neutral-700',
         )}
       >
-        <p className="font-medium text-zinc-800">{compacto ? 'Adicionar arquivo' : 'Arraste os arquivos aqui'}</p>
-        <p className="mt-1 text-sm text-zinc-600">
-          ou clique para escolher. Também dá para colar com <kbd className="rounded border px-1">Ctrl</kbd>+<kbd className="rounded border px-1">V</kbd>.
+        <p className={cn('font-semibold', compacto ? 'text-base' : 'text-[20px]')}>{compacto ? 'Adicionar arquivo' : 'Arraste os arquivos aqui'}</p>
+        <p className="mt-1.5 text-[13px] leading-relaxed text-neutral-700">
+          PDF, JPG, PNG ou XML · vários de uma vez
+          <br />
+          até 25 MB por arquivo · também dá para colar com <kbd>Ctrl</kbd>+<kbd>V</kbd>
         </p>
-        <p className="mt-2 text-xs text-zinc-500">PDF, JPG, PNG ou XML · até 25 MB cada · vários de uma vez</p>
+        <span className={buttonClass('secondary', compacto ? 'sm' : 'md', 'mt-4')} aria-hidden>
+          Escolher do computador
+        </span>
         <input
           ref={inputRef}
           type="file"
@@ -220,55 +227,76 @@ export function Uploader({
       </div>
 
       {itens.length > 0 && (
-        <ul className="divide-y divide-zinc-100 rounded-lg border border-zinc-200 bg-white">
-          {itens.map((i) => (
-            <li key={i.id} className="flex items-center gap-3 px-3 py-2 text-sm">
-              <span className="min-w-0 flex-1 truncate" title={i.file.name}>
-                {i.file.name} <span className="text-zinc-400">· {formatarTamanho(i.file.size)}</span>
-              </span>
-              <span
-                className={cn(
-                  'whitespace-nowrap text-xs',
-                  i.status === 'concluido' && 'text-green-700',
-                  i.status === 'erro' && 'text-red-700',
-                  i.status === 'duplicado' && 'text-amber-700',
-                  !['concluido', 'erro', 'duplicado'].includes(i.status) && 'text-zinc-500',
-                )}
-              >
-                {STATUS_LABEL[i.status]}
-                {i.status === 'concluido' && i.agrupado && ' · juntado à mesma nota'}
-                {i.status === 'concluido' && i.temSugestoes && !i.agrupado && ' · dados lidos'}
-                {i.mensagem && `: ${i.mensagem}`}
-              </span>
-              {i.status === 'duplicado' && i.lancamentoId && (
-                <Link href={`/lancamentos/${i.lancamentoId}`} className="text-xs text-blue-700 hover:underline">
-                  abrir existente
-                </Link>
-              )}
-              {i.status === 'erro' && i.mime && (
-                <Button size="sm" variant="secondary" onClick={() => tentarDeNovo(i.id)}>
-                  Tentar de novo
-                </Button>
-              )}
-            </li>
-          ))}
-        </ul>
+        <div>
+          <div className="flex items-baseline justify-between border-b border-divider pb-1.5">
+            <h2 className="text-base font-semibold">Fila deste envio</h2>
+            <span className="text-[13px] tabular-nums text-neutral-700">{resumoFila}</span>
+          </div>
+          <ul className="max-h-[320px] overflow-auto">
+            {itens.map((i) => {
+              const cor =
+                i.status === 'concluido' ? 'bg-accent-600 border-accent-600'
+                : i.status === 'erro' ? 'bg-danger-500 border-danger-500'
+                : i.status === 'duplicado' ? 'bg-neutral-500 border-neutral-500'
+                : 'border-neutral-500';
+              const corTexto =
+                i.status === 'erro' ? 'text-danger-800'
+                : i.status === 'concluido' ? 'text-accent-800'
+                : i.status === 'duplicado' ? 'text-neutral-800'
+                : 'text-neutral-600';
+              return (
+                <li key={i.id} className="flex items-center gap-3 border-b border-divider px-2 py-2.5 text-sm">
+                  <span className={cn('h-[7px] w-[7px] shrink-0 rounded-full border', cor)} aria-hidden />
+                  <span className="min-w-0 flex-1 truncate tabular-nums" title={i.file.name}>
+                    {i.file.name} <span className="text-neutral-600">· {formatarTamanho(i.file.size)}</span>
+                  </span>
+                  <span className={cn('shrink-0 text-[11px] uppercase tracking-[0.06em]', corTexto)}>
+                    {STATUS_LABEL[i.status]}
+                    {i.status === 'concluido' && i.agrupado && ' · juntado à mesma nota'}
+                    {i.status === 'concluido' && i.temSugestoes && !i.agrupado && ' · dados lidos'}
+                  </span>
+                  {i.status === 'duplicado' && i.lancamentoId && (
+                    <Link href={`/lancamentos/${i.lancamentoId}`} className="shrink-0 text-[13px] text-accent-700 hover:underline">
+                      abrir existente
+                    </Link>
+                  )}
+                  {i.status === 'erro' && i.mime && (
+                    <Button size="sm" variant="secondary" onClick={() => tentarDeNovo(i.id)}>
+                      Tentar novamente
+                    </Button>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+          {itens.some((i) => i.status === 'erro' && i.mensagem) && (
+            <div className="mt-3 rounded-md border border-l-[3px] border-danger-500 bg-danger-100 px-4 py-3 text-sm text-danger-800">
+              {itens
+                .filter((i) => i.status === 'erro' && i.mensagem)
+                .map((i) => (
+                  <p key={i.id} className="leading-relaxed">
+                    <span className="tabular-nums">{i.file.name}</span>: {i.mensagem}
+                  </p>
+                ))}
+            </div>
+          )}
+        </div>
       )}
 
       {terminou && !lancamentoId && (
-        <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-zinc-200 bg-zinc-50 p-3">
-          <p className="text-sm text-zinc-700">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-t border-divider pt-4">
+          <p className="text-[15px]">
             {concluidos.length} {concluidos.length === 1 ? 'documento registrado' : 'documentos registrados'}
             {itens.some((i) => i.status === 'duplicado') && ', alguns já existiam'}
             {itens.some((i) => i.status === 'erro') && ', alguns falharam'}.
           </p>
           <div className="flex gap-2">
-            <Button variant="secondary" onClick={() => setItens([])}>
+            <Button size="lg" variant="secondary" onClick={() => setItens([])}>
               Enviar mais
             </Button>
             {primeiroNovo && (
-              <Button onClick={() => router.push(`/lancamentos/${primeiroNovo}?fila=1`)}>
-                Revisar lançamentos →
+              <Button size="lg" onClick={() => router.push(`/lancamentos/${primeiroNovo}?fila=1`)}>
+                Revisar lançamentos
               </Button>
             )}
           </div>

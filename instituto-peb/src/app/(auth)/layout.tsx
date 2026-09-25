@@ -1,12 +1,20 @@
+import Image from 'next/image';
+
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
-    <main className="flex min-h-screen items-center justify-center bg-zinc-100 p-4">
-      <div className="w-full max-w-sm rounded-lg border border-zinc-200 bg-white p-6 shadow-sm">
-        <div className="mb-6">
-          <p className="text-xs font-medium uppercase tracking-wide text-zinc-500">Instituto PEB</p>
-          <h1 className="text-lg font-semibold text-zinc-900">Notas fiscais</h1>
+    <main className="flex min-h-screen items-center justify-center p-6">
+      <div className="w-full max-w-[390px]">
+        <div className="mb-7 text-center">
+          <Image src="/logo-peb.png" alt="" width={66} height={66} className="mx-auto mb-3 mix-blend-multiply" priority />
+          <h1 className="text-[26px] font-semibold">Instituto PEB</h1>
+          <p className="kicker mt-1.5">Prestação de contas</p>
         </div>
-        {children}
+        <div className="rounded-md border border-divider bg-neutral-100 p-7">{children}</div>
+        <p className="mt-4 text-center text-[13px] leading-relaxed text-neutral-700">
+          As contas são criadas pela administração.
+          <br />
+          Sem acesso? Fale com a coordenação.
+        </p>
       </div>
     </main>
   );

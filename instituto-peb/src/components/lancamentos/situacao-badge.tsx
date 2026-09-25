@@ -4,18 +4,18 @@ import type { Situacao } from '@/types/aliases';
 export const SITUACAO_LABEL: Record<Situacao, string> = {
   pendente_revisao: 'Pendente de revisão',
   incompleto: 'Incompleto',
-  exportavel: 'Exportável · com pendências',
+  exportavel: 'Com pendências',
   completo: 'Completo',
 };
 
-const TONE: Record<Situacao, 'amber' | 'red' | 'blue' | 'green'> = {
-  pendente_revisao: 'amber',
-  incompleto: 'red',
-  exportavel: 'blue',
-  completo: 'green',
+const TONE: Record<Situacao, 'alert' | 'danger' | 'neutral' | 'accent'> = {
+  pendente_revisao: 'alert',
+  incompleto: 'danger',
+  exportavel: 'neutral',
+  completo: 'accent',
 };
 
 export function SituacaoBadge({ situacao }: { situacao: string | null }) {
   const s = (situacao ?? 'pendente_revisao') as Situacao;
-  return <Badge tone={TONE[s] ?? 'zinc'}>{SITUACAO_LABEL[s] ?? situacao}</Badge>;
+  return <Badge tone={TONE[s] ?? 'neutral'}>{SITUACAO_LABEL[s] ?? situacao}</Badge>;
 }

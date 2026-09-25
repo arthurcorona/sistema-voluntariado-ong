@@ -31,17 +31,19 @@ export function GerarBotoes({ de, ate, quantidade }: { de: string; ate: string; 
   }
 
   return (
-    <div className="flex flex-col gap-2">
+    <div className="mt-6 flex flex-col gap-3 border-t border-divider pt-4">
       {erro && <Alert tone="error">{erro}</Alert>}
-      <div className="flex flex-wrap gap-2">
-        <Button onClick={() => gerar('csv')} loading={pending} disabled={quantidade === 0}>
-          Gerar CSV
+      <div className="flex flex-wrap items-center gap-3">
+        <Button size="lg" onClick={() => gerar('zip')} loading={pending} disabled={quantidade === 0}>
+          Gerar pacote (CSV + documentos)
         </Button>
-        <Button variant="secondary" onClick={() => gerar('zip')} loading={pending} disabled={quantidade === 0}>
-          Gerar ZIP com documentos
+        <Button size="lg" variant="secondary" onClick={() => gerar('csv')} loading={pending} disabled={quantidade === 0}>
+          Gerar apenas o CSV
         </Button>
+        <span className="ml-auto text-[13px] text-neutral-700">
+          O pacote sai em .zip, com os documentos nomeados conforme as linhas do arquivo. Tudo fica no histórico para baixar de novo.
+        </span>
       </div>
-      <p className="text-xs text-zinc-500">A exportação fica registrada no histórico e pode ser baixada de novo em qualquer formato.</p>
     </div>
   );
 }

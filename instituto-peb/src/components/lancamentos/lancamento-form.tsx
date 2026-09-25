@@ -12,6 +12,7 @@ import { Field } from '@/components/ui/field';
 import { Input, Select, Textarea } from '@/components/ui/input';
 import type { FieldErrors } from '@/lib/action-result';
 import { formatDateBR } from '@/lib/dates';
+import { formatarDocumento } from '@/lib/documento';
 import { formatBRL, formatCentavos } from '@/lib/money';
 import type { LancamentoParaEdicao } from '@/services/lancamentos';
 import type { Fornecedor } from '@/types/aliases';
@@ -55,7 +56,8 @@ export function LancamentoForm({
   const formRef = useRef<HTMLFormElement>(null);
 
   const bloqueado = Boolean(l.bloqueado);
-  const temSugestao = [fornecedorId, numero, serie, data, valor].some((c) => c.origem === 'sugestao');
+  const sugeridos = [fornecedorId, numero, serie, data, valor].filter((c) => c.origem === 'sugestao').length;
+  const fornecedorSalvo = fornecedores.find((f) => f.id === l.fornecedor_id) ?? null;
 
   const set = (setter: (c: Campo) => void) => (valor: string) => setter({ valor, origem: 'digitado' });
 
@@ -141,44 +143,61 @@ export function LancamentoForm({
         if (!bloqueado) submeter(true);
       }}
     >
-      <div className="flex flex-wrap items-center gap-2">
+      {l.exportado && (
+        <div className="rounded-md border border-neutral-400 bg-neutral-200 px-4 py-3 text-sm leading-relaxed">
+          Este lançamento já saiu na exportação de{' '}
+          {exportacoes.map((e, i) => (
+            <span key={e.id}>
+              {i > 0 && ', '}
+              <Link href="/exportacoes" className="text-accent-700 hover:underline">
+                {formatDateBR(e.gerada_em.slice(0, 10))}
+              </Link>
+            </span>
+          ))}
+          {bloqueado ? ' e está bloqueado para edição' : ''}. Editar agora deixa o arquivo do contador diferente do sistema.
+        </div>
+      )}
+
+      <div className="flex flex-wrap items-center gap-3">
         <SituacaoBadge situacao={l.situacao} />
-        {l.exportado && (
-          <span className="text-xs text-zinc-600">
-            Exportado em{' '}
-            {exportacoes.map((e, i) => (
-              <span key={e.id}>
-                {i > 0 && ', '}
-                <Link href="/exportacoes" className="text-blue-700 hover:underline">
-                  {formatDateBR(e.gerada_em.slice(0, 10))}
-                </Link>
-              </span>
-            ))}
+        {l.numero_nota && (
+          <span className="text-[13px] text-neutral-700">
+            Nota fiscal {l.numero_nota}
+            {l.serie_nota ? ` · série ${l.serie_nota}` : ''}
           </span>
+        )}
+        {bloqueado && (
+          <Button type="button" size="sm" variant="secondary" className="ml-auto" onClick={desbloquear} disabled={pending}>
+            Desbloquear para editar
+          </Button>
         )}
       </div>
 
-      {bloqueado && (
-        <Alert tone="warning">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <span>Este lançamento já foi exportado e está bloqueado para edição.</span>
-            <Button type="button" size="sm" variant="secondary" onClick={desbloquear} disabled={pending}>
-              Desbloquear para editar
-            </Button>
+      {l.valor_centavos ? (
+        <div className="mb-2">
+          <div className="text-[44px] font-semibold leading-[1.05] tabular-nums">{formatBRL(l.valor_centavos)}</div>
+          <div className="text-[15px] text-neutral-800">
+            {fornecedorSalvo?.nome ?? l.fornecedor_nome ?? 'Fornecedor não informado'}
+            {fornecedorSalvo?.documento ? ` · ${formatarDocumento(fornecedorSalvo.documento)}` : ''}
           </div>
-        </Alert>
+        </div>
+      ) : null}
+
+      {bloqueado && !l.exportado && (
+        <Alert tone="warning">Este lançamento está bloqueado para edição.</Alert>
       )}
 
-      {temSugestao && !bloqueado && (
-        <Alert tone="warning">
-          Campos em amarelo foram lidos do arquivo. Confira antes de lançar; qualquer um pode ser corrigido.
+      {sugeridos > 0 && !bloqueado && (
+        <Alert tone="info">
+          {sugeridos === 1 ? 'Um campo foi lido do arquivo e está marcado' : `${sugeridos} campos foram lidos do arquivo e estão marcados`} abaixo.
+          Confira cada um antes de lançar; a leitura erra com alguma frequência em datas e valores.
         </Alert>
       )}
 
       {erro && <Alert tone="error">{erro}</Alert>}
 
-      <fieldset disabled={bloqueado || pending} className="flex flex-col gap-4 disabled:opacity-70">
-        <Field label="Fornecedor" htmlFor="fornecedor" error={fieldErrors.fornecedor_id} sugestao={sug(fornecedorId)}>
+      <fieldset disabled={bloqueado || pending} className="grid grid-cols-2 gap-4 disabled:opacity-70">
+        <Field label="Fornecedor" htmlFor="fornecedor" error={fieldErrors.fornecedor_id} sugestao={sug(fornecedorId)} className="col-span-2">
           <FornecedorCombobox
             id="fornecedor"
             fornecedores={fornecedores}
@@ -193,29 +212,24 @@ export function LancamentoForm({
 
         <div className="grid grid-cols-[1fr_5rem] gap-3">
           <Field label="Número da nota" htmlFor="numero" error={fieldErrors.numero_nota} sugestao={sug(numero)}>
-            <Input id="numero" value={numero.valor} onChange={(e) => set(setNumero)(e.target.value)} data-sugestao={sug(numero) || undefined} inputMode="numeric" />
+            <Input id="numero" value={numero.valor} onChange={(e) => set(setNumero)(e.target.value)} data-sugestao={sug(numero) || undefined} inputMode="numeric" className="tabular-nums" />
           </Field>
           <Field label="Série" htmlFor="serie" error={fieldErrors.serie_nota} sugestao={sug(serie)}>
-            <Input id="serie" value={serie.valor} onChange={(e) => set(setSerie)(e.target.value)} data-sugestao={sug(serie) || undefined} />
+            <Input id="serie" value={serie.valor} onChange={(e) => set(setSerie)(e.target.value)} data-sugestao={sug(serie) || undefined} className="tabular-nums" />
           </Field>
         </div>
 
-        <div className="grid grid-cols-2 gap-3">
-          <Field label="Data da nota" htmlFor="data" error={fieldErrors.data_nota} sugestao={sug(data)} hint="DD/MM/AAAA">
-            <Input id="data" value={data.valor} onChange={(e) => set(setData)(e.target.value)} placeholder="31/12/2026" inputMode="numeric" data-sugestao={sug(data) || undefined} />
-          </Field>
-          <Field label="Valor (R$)" htmlFor="valor" error={fieldErrors.valor_centavos} sugestao={sug(valor)}>
-            <Input id="valor" value={valor.valor} onChange={(e) => set(setValor)(e.target.value)} placeholder="1.234,56" inputMode="decimal" className="text-right tabular-nums" data-sugestao={sug(valor) || undefined} />
-          </Field>
-        </div>
+        <Field label="Data da nota" htmlFor="data" error={fieldErrors.data_nota} sugestao={sug(data)} hint="DD/MM/AAAA">
+          <Input id="data" value={data.valor} onChange={(e) => set(setData)(e.target.value)} placeholder="31/12/2026" inputMode="numeric" data-sugestao={sug(data) || undefined} className="tabular-nums" />
+        </Field>
 
-        <Field label="Descrição do item" htmlFor="descricao" error={fieldErrors.descricao}>
-          <Textarea id="descricao" value={descricao.valor} onChange={(e) => set(setDescricao)(e.target.value)} rows={2} placeholder="O que foi comprado ou contratado" />
+        <Field label="Valor (R$)" htmlFor="valor" error={fieldErrors.valor_centavos} sugestao={sug(valor)}>
+          <Input id="valor" value={valor.valor} onChange={(e) => set(setValor)(e.target.value)} placeholder="1.234,56" inputMode="decimal" className="text-right tabular-nums" data-sugestao={sug(valor) || undefined} />
         </Field>
 
         <Field label="Conta bancária" htmlFor="conta" error={fieldErrors.conta_bancaria_id}>
           <Select id="conta" value={contaId.valor} onChange={(e) => set(setContaId)(e.target.value)}>
-            <option value="">— não informada —</option>
+            <option value="">Não informada</option>
             {contas.map((c) => (
               <option key={c.id} value={c.id}>
                 {c.nome}
@@ -224,19 +238,23 @@ export function LancamentoForm({
             ))}
           </Select>
         </Field>
+
+        <Field label="Descrição do item" htmlFor="descricao" error={fieldErrors.descricao} className="col-span-2">
+          <Textarea id="descricao" value={descricao.valor} onChange={(e) => set(setDescricao)(e.target.value)} rows={2} placeholder="O que foi comprado ou contratado" />
+        </Field>
       </fieldset>
 
-      <div className="flex flex-wrap items-center gap-2 border-t border-zinc-200 pt-4">
-        <Button type="submit" loading={pending} disabled={bloqueado} title="Ctrl+Enter">
+      <div className="mt-2 flex flex-wrap items-center gap-3 border-t border-divider pt-4">
+        <Button type="submit" size="lg" loading={pending} disabled={bloqueado} title="Ctrl+Enter">
           {fila ? 'Lançar e ir para o próximo' : l.revisado_em ? 'Salvar' : 'Lançar'}
         </Button>
         {!l.revisado_em && (
-          <Button type="button" variant="secondary" disabled={pending || bloqueado} onClick={() => submeter(false)}>
+          <Button type="button" size="lg" variant="secondary" disabled={pending || bloqueado} onClick={() => submeter(false)}>
             Salvar sem lançar
           </Button>
         )}
         {fila && (
-          <Button type="button" variant="ghost" disabled={pending} onClick={pular}>
+          <Button type="button" size="lg" variant="ghost" disabled={pending} onClick={pular}>
             Pular
           </Button>
         )}
@@ -248,9 +266,8 @@ export function LancamentoForm({
         )}
       </div>
 
-      <p className="text-xs text-zinc-500">
-        <kbd className="rounded border px-1">Ctrl</kbd>+<kbd className="rounded border px-1">Enter</kbd> lança. Nenhum campo é obrigatório; o que faltar
-        aparece como pendência.
+      <p className="text-[13px] leading-relaxed text-neutral-700">
+        <kbd>Ctrl</kbd>+<kbd>Enter</kbd> lança. Nenhum campo é obrigatório; o que faltar aparece como pendência.
         {l.valor_centavos ? ` · Valor salvo: ${formatBRL(l.valor_centavos)}` : ''}
       </p>
     </form>

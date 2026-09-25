@@ -1,1 +1,103 @@
 @import "tailwindcss";
+
+/*
+ * Identidade visual do sistema (mockup "Prestação de Contas · Instituto PEB").
+ * Fundo quente, acento vermelho-alaranjado, Public Sans, cantos discretos.
+ * Os tokens abaixo viram utilitários do Tailwind (bg-accent-500, text-ink,
+ * border-divider, rounded-md, shadow-md, font-sans...).
+ */
+@theme {
+  --font-sans: var(--font-public-sans), system-ui, sans-serif;
+
+  --color-bg: #f3f2f2;
+  --color-surface: #eae9e9;
+  --color-ink: #201f1d;
+  --color-divider: rgb(32 31 29 / 0.16);
+
+  --color-neutral-100: #f8f4f4;
+  --color-neutral-200: #eae7e7;
+  --color-neutral-300: #d7d3d3;
+  --color-neutral-400: #bab6b6;
+  --color-neutral-500: #9b9797;
+  --color-neutral-600: #7d7979;
+  --color-neutral-700: #605d5d;
+  --color-neutral-800: #444141;
+  --color-neutral-900: #2d2b2b;
+
+  --color-accent-100: #fdeae4;
+  --color-accent-200: #fbd2c7;
+  --color-accent-300: #f7ae99;
+  --color-accent-400: #f27f5f;
+  --color-accent-500: #ee3b18;
+  --color-accent-600: #d33314;
+  --color-accent-700: #ad2a11;
+  --color-accent-800: #84200c;
+  --color-accent-900: #5b1608;
+
+  --color-danger-50: #fdf2f4;
+  --color-danger-100: #fbeaed;
+  --color-danger-500: #9b1c2e;
+  --color-danger-800: #7c1523;
+
+  --radius-sm: 2px;
+  --radius-md: 4px;
+  --radius-lg: 7px;
+
+  --shadow-sm: 0 1px 2px rgb(45 43 43 / 0.14);
+  --shadow-md: 0 3px 10px rgb(45 43 43 / 0.16);
+  --shadow-lg: 0 12px 32px rgb(45 43 43 / 0.22);
+}
+
+@layer base {
+  html {
+    background: var(--color-bg);
+  }
+  body {
+    background: var(--color-bg);
+    color: var(--color-ink);
+    font-size: 15px;
+    line-height: 1.55;
+  }
+  h1, h2, h3, h4 {
+    font-weight: 600;
+    line-height: 1.12;
+    letter-spacing: -0.01em;
+  }
+  input, select, button, textarea {
+    font-family: inherit;
+  }
+  ::placeholder {
+    color: var(--color-neutral-600);
+  }
+  ::selection {
+    background: rgb(238 59 24 / 0.3);
+  }
+  :focus-visible {
+    outline: 2px solid var(--color-accent-500);
+    outline-offset: 2px;
+  }
+  kbd {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 0.85em;
+    border: 1px solid var(--color-neutral-400);
+    border-radius: 2px;
+    padding: 0 4px;
+    background: var(--color-neutral-100);
+  }
+}
+
+/* Rótulo pequeno em caixa alta, usado acima de números e seções. */
+@utility kicker {
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-neutral-700);
+}
+
+/* Moldura do visualizador de documentos (o "plate" do mockup). */
+@utility plate {
+  box-sizing: border-box;
+  border: 6px solid var(--color-surface);
+  outline: 1px solid var(--color-divider);
+  background: var(--color-neutral-200);
+}

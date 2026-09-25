@@ -8,7 +8,7 @@ export default async function NovaSenhaPage() {
   if (!data.user) redirect('/login?erro=link');
   return (
     <>
-      <p className="mb-4 text-sm text-zinc-600">Crie uma nova senha para {data.user.email}.</p>
+      <p className="mb-4 text-sm leading-relaxed text-neutral-800">Crie uma nova senha para {data.user.email}.</p>
       <NovaSenhaForm />
     </>
   );

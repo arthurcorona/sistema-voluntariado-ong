@@ -138,3 +138,14 @@ export async function excluirEmLote(db: DbClient, ids: string[]): Promise<number
   const res = await db.from('lancamentos').delete().in('id', ids).eq('bloqueado', false).select('id');
   return unwrap(res, 'lancamentos.excluirEmLote').length;
 }
+
+/** Lançamentos que ainda não estão completos, do mais recente ao mais antigo (painel). */
+export async function listarPendencias(db: DbClient, limite: number): Promise<{ linhas: LancamentoView[]; total: number }> {
+  const res = await db
+    .from('vw_lancamentos')
+    .select('*', { count: 'exact' })
+    .neq('situacao', 'completo')
+    .order('criado_em', { ascending: false })
+    .limit(limite);
+  return { linhas: unwrap(res, 'lancamentos.listarPendencias'), total: res.count ?? 0 };
+}

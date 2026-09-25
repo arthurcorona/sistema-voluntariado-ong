@@ -18,7 +18,7 @@ export function NovaSenhaForm() {
       <Field label="Repita a senha" htmlFor="confirmacao">
         <Input id="confirmacao" name="confirmacao" type="password" autoComplete="new-password" required />
       </Field>
-      <Button type="submit" loading={pending}>
+      <Button type="submit" size="lg" loading={pending} className="mt-2 w-full">
         Salvar nova senha
       </Button>
     </form>

@@ -19,7 +19,7 @@ export function Busca({ placeholder }: { placeholder: string }) {
         next.delete('pagina');
         router.push(`${pathname}?${next.toString()}`);
       }}
-      className="w-72"
+      className="w-[280px]"
     >
       <Input name="q" type="search" defaultValue={params.get('q') ?? ''} placeholder={placeholder} aria-label={placeholder} />
     </form>

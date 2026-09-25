@@ -3,16 +3,17 @@ import { cn } from '@/lib/cn';
 
 type Tone = 'error' | 'success' | 'info' | 'warning';
 
+/* Avisos com filete à esquerda, no acento (atenção) ou no vermelho de erro. */
 const TONES: Record<Tone, string> = {
-  error: 'border-red-200 bg-red-50 text-red-800',
-  success: 'border-green-200 bg-green-50 text-green-800',
-  info: 'border-blue-200 bg-blue-50 text-blue-800',
-  warning: 'border-amber-200 bg-amber-50 text-amber-900',
+  error: 'border-danger-500 border-l-[3px] bg-danger-100 text-danger-800',
+  warning: 'border-accent-500 border-l-[3px] bg-accent-100 text-accent-900',
+  info: 'border-accent-400 bg-accent-100 text-accent-900',
+  success: 'border-neutral-400 border-l-[3px] bg-neutral-200 text-ink',
 };
 
 export function Alert({ tone = 'info', children, className }: { tone?: Tone; children: ReactNode; className?: string }) {
   return (
-    <div role={tone === 'error' ? 'alert' : 'status'} className={cn('rounded-md border px-3 py-2 text-sm', TONES[tone], className)}>
+    <div role={tone === 'error' ? 'alert' : 'status'} className={cn('rounded-md border px-4 py-3 text-sm leading-relaxed', TONES[tone], className)}>
       {children}
     </div>
   );

@@ -88,7 +88,7 @@ try {
   await page.waitForURL('**/lancamentos/**');
 
   // 4. Lançamento com sugestões
-  await page.waitForSelector('text=sugerido');
+  await page.waitForSelector('text=lido do arquivo');
   await shot('04-lancamento-sugestoes');
   const numero = await page.inputValue('#numero');
   const valor = await page.inputValue('#valor');
@@ -101,7 +101,7 @@ try {
     await page.waitForSelector('text=Novo fornecedor');
     await page.click('button:has-text("Adicionar")');
     await page.waitForSelector('text=Novo fornecedor', { state: 'detached', timeout: 15000 }).catch(() => null);
-    const erroPopover = await page.locator('form [role=alert], form .text-red-600').allTextContents();
+    const erroPopover = await page.locator('form [role=alert]').allTextContents();
     if (erroPopover.length) falha('popover de fornecedor mostrou erro: ' + erroPopover.join(' | '));
     await page.waitForFunction(() => document.querySelector('#fornecedor')?.value === 'Papelaria Teste Ltda');
     await page.waitForSelector('button:has-text("Emitente lido do arquivo sem cadastro")', { state: 'detached' });
@@ -140,11 +140,11 @@ try {
 
   // 7. Exportar
   await page.goto(BASE + '/exportar?de=2026-09-01&ate=2026-09-30');
-  await page.waitForSelector('text=Gerar CSV');
+  await page.waitForSelector('text=Gerar apenas o CSV');
   await shot('08-exportar-previa');
   const previaLinhas = await page.locator('tbody tr').count();
   console.log('   prévia: ' + previaLinhas + ' linha(s)');
-  const [dl] = await Promise.all([page.waitForEvent('download', { timeout: 30000 }), page.click('button:has-text("Gerar CSV")')]);
+  const [dl] = await Promise.all([page.waitForEvent('download', { timeout: 30000 }), page.click('button:has-text("Gerar apenas o CSV")')]);
   const csvPath = path.join(DL, await dl.suggestedFilename());
   await dl.saveAs(csvPath);
   const csv = fs.readFileSync(csvPath, 'utf8');
@@ -154,7 +154,7 @@ try {
   await shot('09-historico');
 
   // 8. ZIP do histórico
-  const [dlz] = await Promise.all([page.waitForEvent('download', { timeout: 60000 }), page.click('a:has-text("ZIP com documentos")')]);
+  const [dlz] = await Promise.all([page.waitForEvent('download', { timeout: 60000 }), page.click('a:has-text("Pacote")')]);
   const zipPath = path.join(DL, await dlz.suggestedFilename());
   await dlz.saveAs(zipPath);
   const JSZip = createRequire(import.meta.url)('jszip');

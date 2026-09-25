@@ -12,8 +12,13 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
         </Alert>
       )}
       <LoginForm />
-      <p className="mt-4 text-center text-sm">
-        <Link href="/redefinir-senha" className="text-blue-700 hover:underline">
+      <div className="my-6 flex items-center gap-3">
+        <span className="h-px flex-1 bg-divider" />
+        <span className="text-xs text-neutral-700">ou</span>
+        <span className="h-px flex-1 bg-divider" />
+      </div>
+      <p className="text-center text-sm">
+        <Link href="/redefinir-senha" className="text-accent-700 hover:text-accent-800 hover:underline">
           Esqueci minha senha
         </Link>
       </p>

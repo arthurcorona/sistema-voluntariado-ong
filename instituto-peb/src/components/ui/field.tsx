@@ -6,7 +6,7 @@ type Props = {
   htmlFor?: string;
   error?: string;
   hint?: string;
-  /** Mostra a etiqueta "sugerido" ao lado do rótulo (RF022). */
+  /** Mostra a etiqueta "lido do arquivo" ao lado do rótulo (RF022). */
   sugestao?: boolean;
   className?: string;
   children: ReactNode;
@@ -14,23 +14,27 @@ type Props = {
 
 export function Field({ label, htmlFor, error, hint, sugestao, className, children }: Props) {
   return (
-    <div className={cn('flex flex-col gap-1', className)}>
-      <label htmlFor={htmlFor} className="flex items-center gap-2 text-sm font-medium text-zinc-700">
+    <div className={cn('flex flex-col', className)}>
+      <label htmlFor={htmlFor} className="mb-1.5 flex items-center gap-2 text-sm text-ink">
         {label}
-        {sugestao && (
-          <span className="rounded bg-amber-100 px-1.5 py-0.5 text-[11px] font-medium text-amber-800">
-            sugerido
-          </span>
-        )}
+        {sugestao && <SugestaoTag />}
       </label>
       {children}
       {error ? (
-        <p className="text-xs text-red-600" role="alert">
+        <p className="mt-1.5 text-[13px] leading-snug text-danger-800" role="alert">
           {error}
         </p>
       ) : hint ? (
-        <p className="text-xs text-zinc-500">{hint}</p>
+        <p className="mt-1.5 text-[13px] leading-snug text-neutral-700">{hint}</p>
       ) : null}
     </div>
+  );
+}
+
+export function SugestaoTag() {
+  return (
+    <span className="rounded-sm border border-accent-400 px-1.5 py-px text-[11px] uppercase leading-tight tracking-[0.06em] text-accent-800">
+      lido do arquivo
+    </span>
   );
 }

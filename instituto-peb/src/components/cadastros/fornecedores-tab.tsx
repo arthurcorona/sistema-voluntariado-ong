@@ -13,6 +13,8 @@ import type { FieldErrors } from '@/lib/action-result';
 import { formatarDocumento } from '@/lib/documento';
 import type { Fornecedor } from '@/types/aliases';
 
+const TH = 'px-4 py-2.5 text-left text-[11px] font-normal uppercase tracking-[0.1em] text-neutral-700';
+
 export function FornecedoresTab({ fornecedores, busca }: { fornecedores: Fornecedor[]; busca?: string }) {
   const router = useRouter();
   const [editando, setEditando] = useState<string | null>(null);
@@ -28,7 +30,7 @@ export function FornecedoresTab({ fornecedores, busca }: { fornecedores: Fornece
   }
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-5">
       <FornecedorForm
         titulo="Novo fornecedor"
         onSubmit={async (dados) => criarFornecedor(dados)}
@@ -38,54 +40,56 @@ export function FornecedoresTab({ fornecedores, busca }: { fornecedores: Fornece
       {erro && <Alert tone="error">{erro}</Alert>}
 
       {fornecedores.length === 0 ? (
-        <EmptyState title={busca ? 'Nenhum fornecedor encontrado.' : 'Nenhum fornecedor cadastrado.'}>
+        <EmptyState title={busca ? 'Nenhum fornecedor encontrado' : 'Nenhum fornecedor cadastrado'}>
           Fornecedores também podem ser criados direto na tela do lançamento.
         </EmptyState>
       ) : (
-        <table className="w-full text-sm">
-          <thead className="text-left text-xs uppercase tracking-wide text-zinc-500">
-            <tr className="border-b border-zinc-200">
-              <th className="py-2 pr-3">Nome</th>
-              <th className="py-2 pr-3">CPF/CNPJ</th>
-              <th className="py-2 pr-3">Situação</th>
-              <th className="py-2 text-right">Ações</th>
-            </tr>
-          </thead>
-          <tbody>
-            {fornecedores.map((f) =>
-              editando === f.id ? (
-                <tr key={f.id} className="border-b border-zinc-100 bg-zinc-50">
-                  <td colSpan={4} className="py-3">
-                    <FornecedorForm
-                      titulo="Editar fornecedor"
-                      inicial={f}
-                      onSubmit={async (dados) => atualizarFornecedor({ id: f.id, ...dados })}
-                      onSaved={() => {
-                        setEditando(null);
-                        router.refresh();
-                      }}
-                      onCancel={() => setEditando(null)}
-                    />
-                  </td>
-                </tr>
-              ) : (
-                <tr key={f.id} className="border-b border-zinc-100">
-                  <td className="py-2 pr-3 font-medium text-zinc-900">{f.nome}</td>
-                  <td className="py-2 pr-3 tabular-nums text-zinc-700">{formatarDocumento(f.documento) || '—'}</td>
-                  <td className="py-2 pr-3">{f.ativo ? <Badge tone="green">Ativo</Badge> : <Badge>Inativo</Badge>}</td>
-                  <td className="py-2 text-right">
-                    <Button variant="ghost" size="sm" onClick={() => setEditando(f.id)}>
-                      Editar
-                    </Button>
-                    <Button variant="ghost" size="sm" disabled={pending} onClick={() => alternar(f)}>
-                      {f.ativo ? 'Inativar' : 'Reativar'}
-                    </Button>
-                  </td>
-                </tr>
-              ),
-            )}
-          </tbody>
-        </table>
+        <div className="overflow-auto rounded-md border border-divider bg-neutral-100">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-divider">
+                <th className={TH}>Nome</th>
+                <th className={TH}>CPF/CNPJ</th>
+                <th className={TH}>Situação</th>
+                <th className={`${TH} text-right`}>Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+              {fornecedores.map((f) =>
+                editando === f.id ? (
+                  <tr key={f.id} className="border-b border-divider last:border-b-0">
+                    <td colSpan={4} className="p-3">
+                      <FornecedorForm
+                        titulo="Editar fornecedor"
+                        inicial={f}
+                        onSubmit={async (dados) => atualizarFornecedor({ id: f.id, ...dados })}
+                        onSaved={() => {
+                          setEditando(null);
+                          router.refresh();
+                        }}
+                        onCancel={() => setEditando(null)}
+                      />
+                    </td>
+                  </tr>
+                ) : (
+                  <tr key={f.id} className="border-b border-divider last:border-b-0 hover:bg-ink/4">
+                    <td className="px-4 py-3 text-[15px]">{f.nome}</td>
+                    <td className="px-4 py-3 tabular-nums text-neutral-800">{formatarDocumento(f.documento) || '—'}</td>
+                    <td className="px-4 py-3">{f.ativo ? <Badge tone="accent">Ativo</Badge> : <Badge tone="muted">Inativo</Badge>}</td>
+                    <td className="px-4 py-2 text-right">
+                      <Button variant="ghost" size="sm" onClick={() => setEditando(f.id)}>
+                        Editar
+                      </Button>
+                      <Button variant="ghost" size="sm" disabled={pending} onClick={() => alternar(f)}>
+                        {f.ativo ? 'Inativar' : 'Reativar'}
+                      </Button>
+                    </td>
+                  </tr>
+                ),
+              )}
+            </tbody>
+          </table>
+        </div>
       )}
     </div>
   );
@@ -143,7 +147,7 @@ export function FornecedorForm({
 
   const campos = (
     <>
-      {!compacto && <p className="w-full text-sm font-medium text-zinc-700">{titulo}</p>}
+      {!compacto && <p className="w-full text-[15px] font-semibold">{titulo}</p>}
       <Field label="Nome" htmlFor={`f-nome-${titulo}`} error={fieldErrors.nome} className={compacto ? '' : 'min-w-64 flex-1'}>
         <Input
           id={`f-nome-${titulo}`}
@@ -162,6 +166,7 @@ export function FornecedorForm({
           value={documento}
           onChange={(e) => setDocumento(e.target.value)}
           placeholder="00.000.000/0000-00"
+          className="tabular-nums"
           onKeyDown={compacto ? teclaEnter(enviar) : undefined}
         />
       </Field>
@@ -189,7 +194,7 @@ export function FornecedorForm({
 
   return (
     <form
-      className="flex flex-wrap items-end gap-3 rounded-lg border border-zinc-200 bg-white p-3"
+      className="flex flex-wrap items-end gap-3 rounded-md border border-divider bg-neutral-100 p-4"
       onSubmit={(e) => {
         e.preventDefault();
         void enviar();

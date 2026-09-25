@@ -16,7 +16,7 @@ export function RedefinirForm() {
       <Field label="E-mail" htmlFor="email">
         <Input id="email" name="email" type="email" autoComplete="username" required autoFocus defaultValue={state.email ?? ''} />
       </Field>
-      <Button type="submit" loading={pending}>
+      <Button type="submit" size="lg" loading={pending} className="mt-2 w-full">
         Enviar link
       </Button>
     </form>

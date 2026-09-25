@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation';
 import { IdleLogout } from '@/components/layout/idle-logout';
 import { Sidebar } from '@/components/layout/sidebar';
+import { formatMesAno, todayISO } from '@/lib/dates';
 import { createClient } from '@/lib/supabase/server';
 import * as perfis from '@/repositories/perfis';
 import * as lancamentos from '@/repositories/lancamentos';
@@ -13,14 +14,14 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const perfil = await perfis.obterPerfilAtual(db);
   if (!perfil) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-zinc-100 p-4">
-        <div className="max-w-md rounded-lg border border-zinc-200 bg-white p-6 text-center shadow-sm">
-          <h1 className="text-lg font-semibold">Acesso desativado</h1>
-          <p className="mt-2 text-sm text-zinc-600">
+      <main className="flex min-h-screen items-center justify-center p-6">
+        <div className="max-w-md rounded-md border border-divider bg-neutral-100 p-7 text-center">
+          <h1 className="text-[22px] font-semibold">Acesso desativado</h1>
+          <p className="mt-2 text-sm leading-relaxed text-neutral-800">
             Sua conta existe, mas o acesso ao sistema está desativado. Fale com o responsável no Instituto.
           </p>
-          <form action="/api/sair" method="post" className="mt-4">
-            <button type="submit" className="text-sm text-blue-700 hover:underline">
+          <form action="/api/sair" method="post" className="mt-5">
+            <button type="submit" className="text-sm text-accent-700 hover:underline">
               Sair
             </button>
           </form>
@@ -30,11 +31,12 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   }
 
   const pendentes = await lancamentos.contarPendentes(db);
+  const competencia = formatMesAno(todayISO());
 
   return (
-    <div className="flex min-h-screen">
-      <Sidebar nome={perfil.nome} pendentes={pendentes} />
-      <main className="min-w-0 flex-1 p-6">{children}</main>
+    <div className="flex h-screen overflow-hidden">
+      <Sidebar nome={perfil.nome} pendentes={pendentes} competencia={competencia} />
+      <main className="flex min-w-0 flex-1 flex-col overflow-hidden">{children}</main>
       <IdleLogout />
     </div>
   );

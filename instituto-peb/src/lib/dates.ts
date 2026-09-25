@@ -47,3 +47,17 @@ function isValidDate(y: number, mo: number, d: number): boolean {
   const daysInMonth = new Date(Date.UTC(y, mo, 0)).getUTCDate();
   return d <= daysInMonth;
 }
+
+const MESES = [
+  'janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho',
+  'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro',
+] as const;
+
+/** "2026-09-01" → "Setembro de 2026". Sem Date, para não depender de fuso. */
+export function formatMesAno(iso: string): string {
+  const m = ISO_RE.exec(iso);
+  if (!m) throw new TypeError(`Data ISO inválida: ${iso}`);
+  const nome = MESES[Number(m[2]) - 1];
+  if (!nome) throw new TypeError(`Mês inválido: ${iso}`);
+  return `${nome.charAt(0).toUpperCase()}${nome.slice(1)} de ${m[1]}`;
+}

@@ -1,66 +1,72 @@
 import Link from 'next/link';
-import { Button } from '@/components/ui/button';
-import { EmptyState, PageHeader } from '@/components/ui/card';
+import { buttonClass } from '@/components/ui/button';
+import { EmptyState, Page } from '@/components/ui/card';
 import { formatDateBR } from '@/lib/dates';
 import { formatBRL } from '@/lib/money';
 import { createClient } from '@/lib/supabase/server';
 import * as exportacoes from '@/services/exportacoes';
+
+const FUSO = 'America/Sao_Paulo';
 
 export default async function ExportacoesPage() {
   const db = await createClient();
   const lista = await exportacoes.listar(db);
 
   return (
-    <div className="mx-auto max-w-5xl">
-      <PageHeader
-        title="Histórico de exportações"
-        description="Tudo que já foi gerado para a contabilidade. Baixe de novo quando precisar."
-        actions={
-          <Link href="/exportar">
-            <Button>Nova exportação</Button>
-          </Link>
-        }
-      />
-
+    <Page
+      title="Exportações"
+      subtitle="Tudo que já foi enviado ao contador. Baixe de novo quando precisar."
+      actions={
+        <Link href="/exportar" className={buttonClass('primary')}>
+          Nova exportação
+        </Link>
+      }
+    >
       {lista.length === 0 ? (
-        <EmptyState title="Nenhuma exportação ainda.">
-          <Link href="/exportar" className="text-blue-700 hover:underline">
-            Gerar a primeira
-          </Link>
+        <EmptyState
+          title="Nenhuma exportação ainda"
+          action={
+            <Link href="/exportar" className={buttonClass('primary', 'lg')}>
+              Gerar a primeira
+            </Link>
+          }
+        >
+          Quando você gerar o arquivo do contador, ele fica registrado aqui com período, data, autor e total.
         </EmptyState>
       ) : (
-        <div className="overflow-x-auto rounded-lg border border-zinc-200 bg-white">
-          <table className="w-full text-sm">
-            <thead className="bg-zinc-50 text-left text-xs uppercase tracking-wide text-zinc-500">
-              <tr>
-                <th className="px-3 py-2">Período</th>
-                <th className="px-3 py-2">Gerada em</th>
-                <th className="px-3 py-2">Por</th>
-                <th className="px-3 py-2 text-right">Lançamentos</th>
-                <th className="px-3 py-2 text-right">Total</th>
-                <th className="px-3 py-2 text-right">Baixar</th>
+        <div className="max-w-[1040px] overflow-auto rounded-md border border-divider bg-neutral-100">
+          <table className="w-full min-w-[800px] text-sm">
+            <thead>
+              <tr className="border-b border-divider text-left text-[11px] uppercase tracking-[0.1em] text-neutral-700">
+                <th className="px-4 py-2.5 font-normal">Período</th>
+                <th className="px-4 py-2.5 font-normal">Gerada em</th>
+                <th className="px-4 py-2.5 font-normal">Por</th>
+                <th className="px-4 py-2.5 text-right font-normal">Lançamentos</th>
+                <th className="px-4 py-2.5 text-right font-normal">Valor total</th>
+                <th className="px-4 py-2.5 font-normal" />
               </tr>
             </thead>
-            <tbody className="divide-y divide-zinc-100">
+            <tbody>
               {lista.map((e) => (
-                <tr key={e.id}>
-                  <td className="whitespace-nowrap px-3 py-2 tabular-nums">
+                <tr key={e.id} className="border-b border-divider last:border-b-0">
+                  <td className="whitespace-nowrap px-4 py-3 text-[15px] tabular-nums">
                     {formatDateBR(e.periodo_inicio)} a {formatDateBR(e.periodo_fim)}
                   </td>
-                  <td className="whitespace-nowrap px-3 py-2 tabular-nums">
-                    {new Date(e.gerada_em).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' })}
+                  <td className="whitespace-nowrap px-4 py-3 tabular-nums text-neutral-800">
+                    {new Date(e.gerada_em).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short', timeZone: FUSO })}
                   </td>
-                  <td className="px-3 py-2">{e.autor_nome ?? '—'}</td>
-                  <td className="px-3 py-2 text-right tabular-nums">{e.total_lancamentos}</td>
-                  <td className="px-3 py-2 text-right tabular-nums">{formatBRL(e.total_centavos)}</td>
-                  <td className="whitespace-nowrap px-3 py-2 text-right">
-                    <a href={`/api/exportacoes/${e.id}/csv`} className="text-blue-700 hover:underline">
-                      CSV
-                    </a>
-                    <span className="mx-2 text-zinc-300">|</span>
-                    <a href={`/api/exportacoes/${e.id}/zip`} className="text-blue-700 hover:underline">
-                      ZIP com documentos
-                    </a>
+                  <td className="px-4 py-3 text-neutral-800">{e.autor_nome ?? '—'}</td>
+                  <td className="px-4 py-3 text-right text-[15px] tabular-nums">{e.total_lancamentos}</td>
+                  <td className="px-4 py-3 text-right text-[15px] tabular-nums">{formatBRL(e.total_centavos)}</td>
+                  <td className="whitespace-nowrap px-4 py-3">
+                    <span className="flex justify-end gap-2">
+                      <a href={`/api/exportacoes/${e.id}/csv`} className={buttonClass('ghost', 'sm')}>
+                        CSV
+                      </a>
+                      <a href={`/api/exportacoes/${e.id}/zip`} className={buttonClass('ghost', 'sm')}>
+                        Pacote
+                      </a>
+                    </span>
                   </td>
                 </tr>
               ))}
@@ -68,6 +74,6 @@ export default async function ExportacoesPage() {
           </table>
         </div>
       )}
-    </div>
+    </Page>
   );
 }

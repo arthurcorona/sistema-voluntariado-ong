@@ -108,7 +108,7 @@ export function FornecedorCombobox({ id, fornecedores, value, onChange, onNovoFo
         {value && (
           <button
             type="button"
-            className="rounded-md px-2 text-zinc-500 hover:bg-zinc-100 hover:text-zinc-800"
+            className="rounded-md px-2 text-lg leading-none text-neutral-600 hover:bg-neutral-200 hover:text-ink"
             aria-label="Limpar fornecedor"
             onClick={() => {
               onChange(null);
@@ -122,53 +122,56 @@ export function FornecedorCombobox({ id, fornecedores, value, onChange, onNovoFo
       </div>
 
       {selecionado?.documento && !aberto && (
-        <p className="mt-1 text-xs text-zinc-500">{formatarDocumento(selecionado.documento)}</p>
+        <p className="mt-1.5 text-[13px] tabular-nums text-neutral-700">{formatarDocumento(selecionado.documento)}</p>
       )}
 
       {aberto && (
         <ul
           id={listId}
           role="listbox"
-          className="absolute z-20 mt-1 max-h-64 w-full overflow-auto rounded-md border border-zinc-200 bg-white py-1 text-sm shadow-lg"
+          className="absolute z-20 mt-1 max-h-64 w-full overflow-auto rounded-md border border-divider bg-bg py-1 text-sm shadow-lg"
         >
           {filtrados.map((f, i) => (
             <li
               key={f.id}
               role="option"
               aria-selected={i === indice}
-              className={cn('cursor-pointer px-3 py-1.5', i === indice ? 'bg-blue-50 text-blue-900' : 'hover:bg-zinc-50')}
+              className={cn('cursor-pointer px-3 py-2', i === indice ? 'bg-accent-100 text-accent-900' : 'hover:bg-neutral-200')}
               onMouseEnter={() => setIndice(i)}
               onMouseDown={(e) => {
                 e.preventDefault();
                 selecionar(f);
               }}
             >
-              <span className="font-medium">{f.nome}</span>
-              {f.documento && <span className="ml-2 text-xs text-zinc-500">{formatarDocumento(f.documento)}</span>}
+              <span>{f.nome}</span>
+              {f.documento && <span className="ml-2 text-[13px] tabular-nums text-neutral-700">{formatarDocumento(f.documento)}</span>}
             </li>
           ))}
           {podeCriar && (
             <li
               role="option"
               aria-selected={indice === filtrados.length}
-              className={cn('cursor-pointer border-t border-zinc-100 px-3 py-1.5', indice === filtrados.length ? 'bg-blue-50 text-blue-900' : 'hover:bg-zinc-50')}
+              className={cn(
+                'cursor-pointer border-t border-divider px-3 py-2 text-accent-700',
+                indice === filtrados.length ? 'bg-accent-100 text-accent-900' : 'hover:bg-neutral-200',
+              )}
               onMouseEnter={() => setIndice(filtrados.length)}
               onMouseDown={(e) => {
                 e.preventDefault();
                 abrirCriacao();
               }}
             >
-              + Criar fornecedor &quot;{texto.trim()}&quot;
+              Criar fornecedor &quot;{texto.trim()}&quot;
             </li>
           )}
-          {filtrados.length === 0 && !podeCriar && <li className="px-3 py-1.5 text-zinc-500">Nenhum fornecedor.</li>}
+          {filtrados.length === 0 && !podeCriar && <li className="px-3 py-2 text-neutral-700">Nenhum fornecedor.</li>}
         </ul>
       )}
 
       {!criando && novoSugerido && !value && (
         <button
           type="button"
-          className="mt-1 text-left text-xs text-amber-800 underline decoration-dotted hover:text-amber-900"
+          className="mt-1.5 text-left text-[13px] text-accent-800 underline decoration-dotted underline-offset-2 hover:text-accent-900"
           onClick={() => {
             setTexto(novoSugerido.nome);
             abrirCriacao();
@@ -179,8 +182,8 @@ export function FornecedorCombobox({ id, fornecedores, value, onChange, onNovoFo
       )}
 
       {criando && (
-        <div className="absolute z-20 mt-1 w-full rounded-md border border-zinc-200 bg-white p-3 shadow-lg">
-          <p className="mb-2 text-sm font-medium text-zinc-800">Novo fornecedor</p>
+        <div className="absolute z-20 mt-1 w-full rounded-md border border-divider bg-bg p-4 shadow-lg">
+          <p className="mb-3 text-[15px] font-semibold">Novo fornecedor</p>
           <FornecedorForm
             compacto
             titulo="novo"
