@@ -11,7 +11,4 @@ firebase-debug.log
 npm-debug.log
 .DS_Store
 
-*.json
-!package.json
-!package-lock.jso
 node_modules/

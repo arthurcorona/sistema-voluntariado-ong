@@ -14,7 +14,14 @@ if [ -z "${DOCKER_HOST:-}" ] && ! docker info >/dev/null 2>&1; then
 fi
 case "${1:-}" in
   push)  npx supabase db push --db-url "$DB_URL" --yes ;;
-  types) npx supabase gen types typescript --db-url "$DB_URL" --schema public > src/types/database.ts && echo "src/types/database.ts gerado" ;;
+  types)
+    # Gera num arquivo temporário: se a CLI falhar, o arquivo versionado fica intacto.
+    TMP=$(mktemp)
+    if npx supabase gen types typescript --db-url "$DB_URL" --schema public > "$TMP" && grep -q "export type Database" "$TMP"; then
+      mv "$TMP" src/types/database.ts && echo "src/types/database.ts gerado"
+    else
+      rm -f "$TMP"; echo "Falha ao gerar tipos (precisa de Docker ou do socket do Podman: systemctl --user start podman.socket)"; exit 1
+    fi ;;
   query) shift; npx supabase db query --db-url "$DB_URL" "$@" ;;
   *) echo "uso: scripts/db.sh push | types | query \"<sql>\""; exit 1 ;;
 esac

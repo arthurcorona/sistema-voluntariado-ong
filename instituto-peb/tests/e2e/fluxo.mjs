@@ -82,6 +82,7 @@ try {
   await shot('03-envio-concluido');
   const linhasFila = await page.locator('li').allTextContents();
   linhasFila.forEach((t) => console.log('   fila: ' + t.trim()));
+  if (linhasFila.some((t) => t.includes('Falhou'))) falha('algum arquivo falhou no envio: ' + linhasFila.filter((t) => t.includes('Falhou')).join(' | '));
   if (linhasFila.some((t) => t.includes('juntado à mesma nota'))) ok('PDF e XML da mesma nota foram agrupados'); else falha('agrupamento XML+PDF não aconteceu');
   if (linhasFila.some((t) => t.includes('dados lidos'))) ok('leitura automática sinalizada'); else falha('sem "dados lidos"');
   await page.click('text=Revisar lançamentos');

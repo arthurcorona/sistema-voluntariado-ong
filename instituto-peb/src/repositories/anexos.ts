@@ -51,6 +51,33 @@ export async function criar(db: DbClient, dados: AnexoInsert): Promise<Anexo> {
   return unwrap(await db.from('anexos').insert(dados).select().single(), 'anexos.criar');
 }
 
+export type RegistroAtomico = { anexoId: string; lancamentoId: string; agrupado: boolean };
+
+/**
+ * Grava o anexo e cria/agrupa o lançamento numa única transação (função no
+ * banco). Lança DbError 23505 se o hash já existir.
+ */
+export async function registrarAtomico(
+  db: DbClient,
+  dados: Omit<AnexoInsert, 'lancamento_id'> & { lancamento_id?: string | null },
+): Promise<RegistroAtomico> {
+  const rows = unwrap(
+    await db.rpc('registrar_anexo', {
+      p_storage_path: dados.storage_path,
+      p_nome_original: dados.nome_original,
+      p_mime_type: dados.mime_type,
+      p_hash_sha256: dados.hash_sha256,
+      p_tamanho_bytes: dados.tamanho_bytes,
+      p_dados_extraidos: dados.dados_extraidos ?? null,
+      p_lancamento_id: dados.lancamento_id ?? undefined,
+    }),
+    'anexos.registrarAtomico',
+  );
+  const r = rows[0];
+  if (!r) throw new Error('registrar_anexo não devolveu resultado');
+  return { anexoId: r.anexo_id, lancamentoId: r.lancamento_id, agrupado: r.agrupado };
+}
+
 export async function excluir(db: DbClient, id: string): Promise<void> {
   check(await db.from('anexos').delete().eq('id', id), 'anexos.excluir');
 }

@@ -388,6 +388,22 @@ export type Database = {
     }
     Functions: {
       operador_ativo: { Args: never; Returns: boolean }
+      registrar_anexo: {
+        Args: {
+          p_dados_extraidos: Json
+          p_hash_sha256: string
+          p_lancamento_id?: string
+          p_mime_type: string
+          p_nome_original: string
+          p_storage_path: string
+          p_tamanho_bytes: number
+        }
+        Returns: {
+          agrupado: boolean
+          anexo_id: string
+          lancamento_id: string
+        }[]
+      }
       registrar_exportacao: {
         Args: {
           p_arquivo_path: string

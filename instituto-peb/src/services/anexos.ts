@@ -1,7 +1,6 @@
 import { DbError } from '@/lib/db-errors';
 import type { RegistrarUploadInput } from '@/lib/validation/anexos';
 import * as anexosRepo from '@/repositories/anexos';
-import * as lancamentosRepo from '@/repositories/lancamentos';
 import * as storage from '@/repositories/storage';
 import { extrair, type DadosExtraidos } from '@/services/extracao';
 import type { Anexo, DbClient } from '@/types/aliases';
@@ -37,25 +36,10 @@ export async function registrarUpload(db: DbClient, input: RegistrarUploadInput)
     dados = null; // leitura é opcional; nunca bloqueia (RF023)
   }
 
-  let lancamentoId = input.lancamentoId;
-  let agrupado = false;
-  let criouLancamento = false;
-
-  if (!lancamentoId && dados?.chave) {
-    const irmao = await anexosRepo.obterPendentePorChave(db, dados.chave);
-    if (irmao) {
-      lancamentoId = irmao.lancamento_id;
-      agrupado = true;
-    }
-  }
-  if (!lancamentoId) {
-    lancamentoId = (await lancamentosRepo.criarVazio(db)).id;
-    criouLancamento = true;
-  }
-
   try {
-    const anexo = await anexosRepo.criar(db, {
-      lancamento_id: lancamentoId,
+    // Lançamento + anexo (+ agrupamento por chave) numa única transação no banco.
+    const r = await anexosRepo.registrarAtomico(db, {
+      lancamento_id: input.lancamentoId ?? null,
       storage_path: input.storagePath,
       nome_original: input.nomeOriginal,
       mime_type: input.mimeType,
@@ -63,11 +47,10 @@ export async function registrarUpload(db: DbClient, input: RegistrarUploadInput)
       tamanho_bytes: input.tamanhoBytes,
       dados_extraidos: dados ?? null,
     });
-    return { lancamentoId, anexoId: anexo.id, agrupado, temSugestoes: dados !== null };
+    return { lancamentoId: r.lancamentoId, anexoId: r.anexoId, agrupado: r.agrupado, temSugestoes: dados !== null };
   } catch (e) {
-    // Desfaz o que este upload criou.
+    // Nada ficou no banco (transação desfeita); só o arquivo precisa sair.
     await storage.remover(db, storage.BUCKET_ANEXOS, [input.storagePath]).catch(() => undefined);
-    if (criouLancamento) await lancamentosRepo.excluir(db, lancamentoId).catch(() => undefined);
 
     // Corrida: outro envio do mesmo arquivo chegou antes.
     if (e instanceof DbError && e.code === '23505') {

@@ -31,7 +31,9 @@ Next.js (App Router, TypeScript, full-stack) · Supabase (Postgres, Auth, Storag
 - Fora de escopo (não construa): emissão de NF, integração contábil, leitura de e-mail, conciliação, contas a pagar, orçamento, mobile, rateio, relatórios/gráficos, perfis de permissão, entradas de recurso.
 
 ## Comandos
-`npm run dev` · `npm run typecheck` · `npm run lint` · `npm test` · `npm run db:push` · `npm run db:types`
+`npm run dev` · `npm run typecheck` · `npm run lint` · `npm test` · `npm run db:push` · `npm run db:types` · `npm run e2e` (fluxo completo no navegador; ver README)
+
+Nunca rode `npm run build` com `npm run dev` aberto: os dois usam a pasta `.next` e o dev quebra.
 
 <!-- BEGIN:nextjs-agent-rules -->
 
