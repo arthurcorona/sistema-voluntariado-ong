@@ -12,3 +12,6 @@ npm-debug.log
 .DS_Store
 
 node_modules/
+
+# Configuração local do Claude Code (modo só sugerir)
+.claude/

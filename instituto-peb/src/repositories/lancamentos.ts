@@ -24,21 +24,19 @@ export async function excluir(db: DbClient, id: string): Promise<void> {
   check(await db.from('lancamentos').delete().eq('id', id), 'lancamentos.excluir');
 }
 
-/** Próximo lançamento pendente de revisão, na ordem de chegada, depois do atual. */
+/**
+ * Próximo lançamento pendente de revisão, do mais antigo ao mais novo,
+ * ignorando o atual (RF019). Olha todos os pendentes, não só os criados
+ * depois do atual: a fila só termina quando não sobra nenhum.
+ */
 export async function proximoPendente(db: DbClient, aposId?: string): Promise<string | null> {
   let q = db
     .from('lancamentos')
-    .select('id, criado_em')
+    .select('id')
     .is('revisado_em', null)
     .order('criado_em', { ascending: true })
     .limit(1);
-  if (aposId) {
-    const atual = unwrapMaybe<Pick<Lancamento, 'criado_em'>>(
-      await db.from('lancamentos').select('criado_em').eq('id', aposId).maybeSingle(),
-      'lancamentos.proximoPendente.atual',
-    );
-    if (atual) q = q.gt('criado_em', atual.criado_em).neq('id', aposId);
-  }
+  if (aposId) q = q.neq('id', aposId);
   const rows = unwrap(await q, 'lancamentos.proximoPendente');
   return rows[0]?.id ?? null;
 }

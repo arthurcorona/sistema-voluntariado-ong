@@ -21,7 +21,15 @@ export async function entrar(_prev: AuthState, formData: FormData): Promise<Auth
     password: parsed.data.senha,
   });
   if (error) {
-    return { erro: 'E-mail ou senha incorretos. Se esqueceu a senha, use "Esqueci minha senha".', email };
+    // Só credencial recusada pelo Auth vira "senha incorreta". Falha de rede
+    // ou do serviço recebe outra mensagem, para não induzir a trocar a senha.
+    const credencialInvalida = error.status === 400 || error.code === 'invalid_credentials';
+    return {
+      erro: credencialInvalida
+        ? 'E-mail ou senha incorretos. Se esqueceu a senha, use "Esqueci minha senha".'
+        : 'Não foi possível conectar ao serviço de login. Verifique a conexão e tente de novo em instantes.',
+      email,
+    };
   }
   redirect('/');
 }

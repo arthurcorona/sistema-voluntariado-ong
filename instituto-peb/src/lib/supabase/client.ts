@@ -2,6 +2,7 @@
 
 import { createBrowserClient } from '@supabase/ssr';
 import { env } from '@/lib/env';
+import { fetchComRetentativa } from '@/lib/supabase/fetch-retentativa';
 import type { Database } from '@/types/database';
 
 /**
@@ -10,5 +11,5 @@ import type { Database } from '@/types/database';
  * Leitura e escrita de dados passam por Server Actions → services → repositories.
  */
 export function createClient() {
-  return createBrowserClient<Database>(env.supabaseUrl, env.supabaseAnonKey);
+  return createBrowserClient<Database>(env.supabaseUrl, env.supabaseAnonKey, { global: { fetch: fetchComRetentativa } });
 }

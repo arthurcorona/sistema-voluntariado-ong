@@ -1,6 +1,7 @@
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { env } from '@/lib/env';
+import { fetchComRetentativa } from '@/lib/supabase/fetch-retentativa';
 import type { Database } from '@/types/database';
 import type { DbClient } from '@/types/aliases';
 
@@ -14,6 +15,7 @@ export async function createClient(): Promise<DbClient> {
   const cookieStore = await cookies();
 
   return createServerClient<Database>(env.supabaseUrl, env.supabaseAnonKey, {
+    global: { fetch: fetchComRetentativa },
     cookies: {
       getAll() {
         return cookieStore.getAll();
