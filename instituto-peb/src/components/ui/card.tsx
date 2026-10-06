@@ -21,9 +21,16 @@ export function StatCard({
 }) {
   const accent = tone === 'accent';
   return (
-    <Card className={cn('px-6 py-4', accent && 'border-accent-400', className)}>
+    <Card className={cn('min-w-0 px-6 py-4', accent && 'border-accent-400', className)}>
       <div className={cn('kicker', accent && 'text-accent-700')}>{kicker}</div>
-      <div className={cn('mt-2 text-[38px] font-semibold leading-[1.1] tabular-nums', accent && 'text-accent-800')}>{value}</div>
+      <div
+        className={cn(
+          'mt-2 text-[clamp(24px,2.6vw,38px)] font-semibold leading-[1.15] tabular-nums [overflow-wrap:anywhere]',
+          accent && 'text-accent-800',
+        )}
+      >
+        {value}
+      </div>
       {detail && <div className="mt-0.5 text-[13px] text-neutral-700">{detail}</div>}
     </Card>
   );

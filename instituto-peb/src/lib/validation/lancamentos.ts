@@ -25,7 +25,8 @@ export const filtrosLancamentosSchema = z.object({
   de: dataObrigatoria.optional(),
   ate: dataObrigatoria.optional(),
   conta: uuidOpcional,
-  situacao: z.enum(SITUACOES).optional(),
+  // Aceita o filtro agregado e os valores antigos para preservar links salvos.
+  situacao: z.enum(['pendente', ...SITUACOES] as const).optional(),
   q: z.string().trim().max(100).optional(),
   pagina: z.coerce.number().int().min(1).default(1),
 });

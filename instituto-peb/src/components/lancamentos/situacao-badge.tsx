@@ -1,21 +1,17 @@
 import { Badge } from '@/components/ui/badge';
-import type { Situacao } from '@/types/aliases';
+/** Dois estados na interface; as quatro situações do banco continuam valendo para a exportação. */
+export type SituacaoTela = 'pendente' | 'completo';
 
-export const SITUACAO_LABEL: Record<Situacao, string> = {
-  pendente_revisao: 'Pendente de revisão',
-  incompleto: 'Incompleto',
-  exportavel: 'Com pendências',
+export const SITUACAO_TELA_LABEL: Record<SituacaoTela, string> = {
+  pendente: 'Pendente',
   completo: 'Completo',
 };
 
-const TONE: Record<Situacao, 'alert' | 'danger' | 'neutral' | 'accent'> = {
-  pendente_revisao: 'alert',
-  incompleto: 'danger',
-  exportavel: 'neutral',
-  completo: 'accent',
-};
+export function situacaoTela(situacao: string | null): SituacaoTela {
+  return situacao === 'completo' ? 'completo' : 'pendente';
+}
 
 export function SituacaoBadge({ situacao }: { situacao: string | null }) {
-  const s = (situacao ?? 'pendente_revisao') as Situacao;
-  return <Badge tone={TONE[s] ?? 'neutral'}>{SITUACAO_LABEL[s] ?? situacao}</Badge>;
+  const s = situacaoTela(situacao);
+  return <Badge tone={s === 'completo' ? 'accent' : 'alert'}>{SITUACAO_TELA_LABEL[s]}</Badge>;
 }

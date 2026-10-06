@@ -14,6 +14,7 @@ import type { FieldErrors } from '@/lib/action-result';
 import { formatDateBR } from '@/lib/dates';
 import { formatarDocumento } from '@/lib/documento';
 import { formatBRL, formatCentavos } from '@/lib/money';
+import { pendenciasDe } from '@/lib/pendencias';
 import type { LancamentoParaEdicao } from '@/services/lancamentos';
 import type { Fornecedor } from '@/types/aliases';
 
@@ -58,6 +59,8 @@ export function LancamentoForm({
   const bloqueado = Boolean(l.bloqueado);
   const sugeridos = [fornecedorId, numero, serie, data, valor].filter((c) => c.origem === 'sugestao').length;
   const fornecedorSalvo = fornecedores.find((f) => f.id === l.fornecedor_id) ?? null;
+  // O aviso descreve os dados salvos; atualiza depois de salvar/lançar a nota.
+  const pendencias = pendenciasDe(l);
 
   const set = (setter: (c: Campo) => void) => (valor: string) => setter({ valor, origem: 'digitado' });
 
@@ -160,6 +163,9 @@ export function LancamentoForm({
 
       <div className="flex flex-wrap items-center gap-3">
         <SituacaoBadge situacao={l.situacao} />
+        {pendencias.length > 0 && (
+          <span className="text-[13px] text-neutral-700">Falta: {pendencias.join(', ').toLowerCase()}</span>
+        )}
         {l.numero_nota && (
           <span className="text-[13px] text-neutral-700">
             Nota fiscal {l.numero_nota}
@@ -219,12 +225,12 @@ export function LancamentoForm({
           </Field>
         </div>
 
-        <Field label="Data da nota" htmlFor="data" error={fieldErrors.data_nota} sugestao={sug(data)} hint="DD/MM/AAAA">
-          <Input id="data" value={data.valor} onChange={(e) => set(setData)(e.target.value)} placeholder="31/12/2026" inputMode="numeric" data-sugestao={sug(data) || undefined} className="tabular-nums" />
+        <Field label="Data da nota" htmlFor="data" error={fieldErrors.data_nota} sugestao={sug(data)}>
+          <Input id="data" value={data.valor} onChange={(e) => set(setData)(e.target.value)} placeholder="dd/mm/aaaa" inputMode="numeric" data-sugestao={sug(data) || undefined} className="tabular-nums" />
         </Field>
 
         <Field label="Valor (R$)" htmlFor="valor" error={fieldErrors.valor_centavos} sugestao={sug(valor)}>
-          <Input id="valor" value={valor.valor} onChange={(e) => set(setValor)(e.target.value)} placeholder="1.234,56" inputMode="decimal" className="text-right tabular-nums" data-sugestao={sug(valor) || undefined} />
+          <Input id="valor" value={valor.valor} onChange={(e) => set(setValor)(e.target.value)} placeholder="0,00" inputMode="decimal" className="text-right tabular-nums" data-sugestao={sug(valor) || undefined} />
         </Field>
 
         <Field label="Conta bancária" htmlFor="conta" error={fieldErrors.conta_bancaria_id}>

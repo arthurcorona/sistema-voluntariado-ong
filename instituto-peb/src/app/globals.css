@@ -67,7 +67,8 @@
     font-family: inherit;
   }
   ::placeholder {
-    color: var(--color-neutral-600);
+    color: var(--color-neutral-500);
+    font-style: italic;
   }
   ::selection {
     background: rgb(238 59 24 / 0.3);

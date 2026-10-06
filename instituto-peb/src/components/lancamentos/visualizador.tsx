@@ -5,6 +5,7 @@ import { useState, useTransition } from 'react';
 import { removerAnexo } from '@/actions/anexos';
 import { Uploader } from '@/components/envio/uploader';
 import { Button } from '@/components/ui/button';
+import { PdfCanvas } from '@/components/lancamentos/pdf-canvas';
 import { ehImagem, ehPdf, ehXml, formatarTamanho } from '@/lib/arquivos';
 import { cn } from '@/lib/cn';
 import { formatDateBR } from '@/lib/dates';
@@ -36,7 +37,7 @@ export function Visualizador({ lancamentoId, anexos, bloqueado }: { lancamentoId
         <>
           <div className="plate flex min-h-0 flex-1 flex-col overflow-hidden">
             <div className="flex min-h-0 flex-1 items-stretch justify-center">
-              {ehPdf(anexo.mime_type) && <iframe title={anexo.nome_original} src={`${anexo.url}#toolbar=0&navpanes=0`} className="h-full w-full" />}
+              {ehPdf(anexo.mime_type) && <PdfCanvas key={anexo.url} url={anexo.url} titulo={anexo.nome_original} />}
               {ehImagem(anexo.mime_type) && (
                 <div className="h-full w-full overflow-auto p-2">
                   {/* eslint-disable-next-line @next/next/no-img-element */}

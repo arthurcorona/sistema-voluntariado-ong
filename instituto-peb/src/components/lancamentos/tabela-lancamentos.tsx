@@ -12,6 +12,7 @@ import { Select } from '@/components/ui/input';
 import { cn } from '@/lib/cn';
 import { formatDateBR } from '@/lib/dates';
 import { formatBRL, formatCentavos } from '@/lib/money';
+import { pendenciasDe } from '@/lib/pendencias';
 import type { ContaBancaria, LancamentoView } from '@/types/aliases';
 
 const TH = 'px-3 py-2.5 text-left text-[11px] font-normal uppercase tracking-[0.1em] text-neutral-700';
@@ -140,8 +141,17 @@ export function TabelaLancamentos({ linhas, contas, total }: { linhas: Lancament
             {linhas.map((l) => {
               const id = l.id ?? '';
               const on = selecionados.has(id);
+              const pend = pendenciasDe(l);
               return (
-                <tr key={id} className={cn('border-b border-divider last:border-b-0', on ? 'bg-accent-100' : 'hover:bg-ink/4')}>
+                <tr
+                  key={id}
+                  onClick={(e) => {
+                    // Controles e links mantêm seu clique; o restante da linha abre a nota.
+                    if ((e.target as HTMLElement).closest('a, button, input, label, select')) return;
+                    router.push(`/lancamentos/${id}`);
+                  }}
+                  className={cn('cursor-pointer border-b border-divider last:border-b-0', on ? 'bg-accent-100' : 'hover:bg-ink/4')}
+                >
                   <td className="px-3 py-3 text-center">
                     <input
                       type="checkbox"
@@ -172,11 +182,20 @@ export function TabelaLancamentos({ linhas, contas, total }: { linhas: Lancament
                   <td className="whitespace-nowrap px-3 py-3 text-right text-[15px] tabular-nums">
                     {l.valor_centavos ? formatCentavos(l.valor_centavos) : '—'}
                   </td>
-                  <td className="whitespace-nowrap px-3 py-3">
-                    <span className="flex items-center gap-2">
-                      <SituacaoBadge situacao={l.situacao} />
-                      {l.exportado && <span className="text-xs text-neutral-600">exportado</span>}
-                    </span>
+                  <td className="px-3 py-3">
+                    <Link
+                      href={`/lancamentos/${id}`}
+                      title={pend.length ? `Abrir · falta: ${pend.join(', ').toLowerCase()}` : 'Abrir lançamento'}
+                      className="inline-flex flex-col items-start gap-1 hover:opacity-80"
+                    >
+                      <span className="flex items-center gap-2 whitespace-nowrap">
+                        <SituacaoBadge situacao={l.situacao} />
+                        {l.exportado && <span className="text-xs text-neutral-600">exportado</span>}
+                      </span>
+                      {pend.length > 0 && (
+                        <span className="max-w-56 truncate text-xs text-neutral-700">Falta: {pend.join(', ').toLowerCase()}</span>
+                      )}
+                    </Link>
                   </td>
                 </tr>
               );

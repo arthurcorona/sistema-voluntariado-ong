@@ -31,7 +31,7 @@ const STATUS_LABEL: Record<Status, string> = {
   verificando: 'Verificando…',
   enviando: 'Enviando…',
   registrando: 'Lendo o documento…',
-  concluido: 'Pronto',
+  concluido: 'Enviado',
   duplicado: 'Já enviado antes',
   erro: 'Falhou',
 };
@@ -178,7 +178,7 @@ export function Uploader({
   const primeiroNovo = concluidos.find((i) => !i.agrupado)?.lancamentoId ?? concluidos[0]?.lancamentoId;
   const prontos = itens.filter((i) => ['concluido', 'duplicado'].includes(i.status)).length;
   const falhas = itens.filter((i) => i.status === 'erro').length;
-  const resumoFila = falhas > 0 ? `${prontos} de ${itens.length} enviados · ${falhas} ${falhas === 1 ? 'falhou' : 'falharam'}` : `${itens.length} ${itens.length === 1 ? 'arquivo' : 'arquivos'} · ${prontos} prontos`;
+  const resumoFila = falhas > 0 ? `${prontos} de ${itens.length} enviados · ${falhas} ${falhas === 1 ? 'falhou' : 'falharam'}` : `${itens.length} ${itens.length === 1 ? 'arquivo' : 'arquivos'} · ${prontos} enviados`;
 
   return (
     <div className="flex flex-col gap-6">
@@ -253,7 +253,7 @@ export function Uploader({
                   <span className={cn('shrink-0 text-[11px] uppercase tracking-[0.06em]', corTexto)}>
                     {STATUS_LABEL[i.status]}
                     {i.status === 'concluido' && i.agrupado && ' · juntado à mesma nota'}
-                    {i.status === 'concluido' && i.temSugestoes && !i.agrupado && ' · dados lidos'}
+                    {i.status === 'concluido' && !i.agrupado && (i.temSugestoes ? ' · dados lidos' : ' · sem leitura, preencher à mão')}
                   </span>
                   {i.status === 'duplicado' && i.lancamentoId && (
                     <Link href={`/lancamentos/${i.lancamentoId}`} className="shrink-0 text-[13px] text-accent-700 hover:underline">

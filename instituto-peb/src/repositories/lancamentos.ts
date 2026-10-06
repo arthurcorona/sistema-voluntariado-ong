@@ -55,7 +55,8 @@ export async function listar(db: DbClient, f: FiltrosLancamentos): Promise<Pagin
   if (f.de) q = q.gte('data_nota', f.de);
   if (f.ate) q = q.lte('data_nota', f.ate);
   if (f.conta) q = q.eq('conta_bancaria_id', f.conta);
-  if (f.situacao) q = q.eq('situacao', f.situacao);
+  if (f.situacao === 'pendente') q = q.neq('situacao', 'completo');
+  else if (f.situacao) q = q.eq('situacao', f.situacao);
   if (f.q) {
     // PostgREST usa vírgula e parênteses como sintaxe no .or(); tiramos do termo.
     const termo = f.q.replace(/[,()]/g, ' ').trim();

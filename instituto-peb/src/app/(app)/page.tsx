@@ -45,7 +45,7 @@ export default async function PainelPage() {
         </div>
       ) : (
         <>
-          <div className="mb-9 grid grid-cols-3 gap-4">
+          <div className="mb-9 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
             <StatCard kicker="Total lançado" value={formatBRL(r.totalCentavos)} detail={`${r.lancados} lançamento(s) em ${mesMinusculo}`} />
             <StatCard
               kicker="Não conferidos"
@@ -65,25 +65,32 @@ export default async function PainelPage() {
           {r.pendencias.length === 0 ? (
             <p className="py-6 text-[15px] text-neutral-700">Nenhuma pendência. Tudo que foi enviado está conferido e completo.</p>
           ) : (
-            <div className="overflow-auto">
+            <div>
               {r.pendencias.map((l) => {
                 const pend = pendenciasDe(l);
                 const titulo = l.fornecedor_nome ?? l.descricao ?? (l.numero_nota ? `Nota ${l.numero_nota}` : 'Documento sem dados');
+                const motivo = painel.motivoPendencia(l, pend);
                 return (
-                  <div
+                  <Link
                     key={l.id}
-                    className="grid min-w-[760px] grid-cols-[96px_minmax(220px,1fr)_240px_130px_120px] items-center gap-4 border-b border-divider px-2 py-3"
+                    href={`/lancamentos/${l.id}`}
+                    className="grid grid-cols-[88px_minmax(0,1fr)_auto] items-center gap-x-4 border-b border-divider px-2 py-3 text-ink hover:bg-ink/4 lg:grid-cols-[96px_minmax(0,1fr)_minmax(0,240px)_130px_110px]"
                   >
                     <span className="text-sm tabular-nums text-neutral-700">{l.data_nota ? formatDateBR(l.data_nota) : '—'}</span>
-                    <span className="truncate text-[15px]" title={titulo}>
-                      {titulo}
+                    <span className="min-w-0">
+                      <span className="block truncate text-[15px]" title={titulo}>
+                        {titulo}
+                      </span>
+                      <span className="block truncate text-[13px] text-neutral-700 lg:hidden">{motivo}</span>
                     </span>
-                    <span className="truncate text-sm text-neutral-800">{painel.motivoPendencia(l, pend)}</span>
+                    <span className="hidden truncate text-sm text-neutral-800 lg:block">{motivo}</span>
                     <span className="text-right text-[15px] tabular-nums">{l.valor_centavos ? formatCentavos(l.valor_centavos) : '—'}</span>
-                    <Link href={`/lancamentos/${l.id}`} className={buttonClass('ghost', 'sm', 'justify-self-end')}>
-                      {l.revisado_em ? 'Completar' : 'Conferir'}
-                    </Link>
-                  </div>
+                    <span className="hidden justify-self-end lg:block">
+                      <span className={buttonClass('ghost', 'sm')}>
+                        {l.revisado_em ? 'Completar' : 'Conferir'}
+                      </span>
+                    </span>
+                  </Link>
                 );
               })}
               {r.pendenciasTotal > r.pendencias.length && (

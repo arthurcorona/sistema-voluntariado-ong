@@ -1,5 +1,4 @@
 import Link from 'next/link';
-import { SITUACAO_LABEL } from '@/components/lancamentos/situacao-badge';
 import { TabelaLancamentos } from '@/components/lancamentos/tabela-lancamentos';
 import { Alert } from '@/components/ui/alert';
 import { Button, buttonClass } from '@/components/ui/button';
@@ -9,7 +8,6 @@ import { createClient } from '@/lib/supabase/server';
 import { filtrosLancamentosSchema, type FiltrosLancamentos } from '@/lib/validation/lancamentos';
 import * as contasService from '@/services/contas-bancarias';
 import * as lancamentos from '@/services/lancamentos';
-import { SITUACOES } from '@/types/aliases';
 
 type SP = Record<string, string | string[] | undefined>;
 
@@ -82,13 +80,14 @@ export default async function LancamentosPage({ searchParams }: { searchParams: 
           </Select>
         </div>
         <div className="w-48">
-          <Select name="situacao" defaultValue={filtros.situacao ?? ''} aria-label="Situação">
+          <Select
+            name="situacao"
+            defaultValue={filtros.situacao === 'completo' ? 'completo' : filtros.situacao ? 'pendente' : ''}
+            aria-label="Situação"
+          >
             <option value="">Todas as situações</option>
-            {SITUACOES.map((s) => (
-              <option key={s} value={s}>
-                {SITUACAO_LABEL[s]}
-              </option>
-            ))}
+            <option value="pendente">Pendentes</option>
+            <option value="completo">Completos</option>
           </Select>
         </div>
         <Button type="submit" size="md" variant="secondary">

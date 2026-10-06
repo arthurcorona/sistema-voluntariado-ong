@@ -5,10 +5,17 @@ Registro de notas fiscais recebidas e geração do arquivo mensal para a contabi
 ## Como rodar
 
 ```bash
-cp .env.example .env.local   # preencha URL e chave anon do Supabase
-npm install
+cp .env.example .env         # preencha URL e chave anon do Supabase
+npm ci
 npm run dev
 ```
+
+Execute os comandos dentro de `instituto-peb/`, a pasta que contém `package.json`.
+É nessa pasta que deve ficar o seu `.env`. No PowerShell, use `Copy-Item .env.example .env`.
+O Next.js carrega `.env` automaticamente; `.env.local` continua aceito e tem prioridade
+se as duas configurações estiverem presentes. Não é necessária uma chave de service role.
+
+Veja `../RELATORIO-ALTERACOES.md` para os cinco ajustes de interface e sua validação.
 
 ## Banco de dados
 

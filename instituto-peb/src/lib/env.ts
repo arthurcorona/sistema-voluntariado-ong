@@ -8,7 +8,7 @@
 function required(name: string, value: string | undefined): string {
   if (!value) {
     throw new Error(
-      `Variável de ambiente ausente: ${name}. Copie .env.example para .env.local e preencha.`,
+      `Variável de ambiente ausente: ${name}. Copie .env.example para .env na raiz da aplicação e preencha.`,
     );
   }
   return value;

@@ -8,7 +8,7 @@ import { cn } from '@/lib/cn';
  */
 export const inputClass =
   'min-h-9 w-full rounded-md border border-divider bg-transparent px-2.5 py-1.5 text-sm text-ink caret-accent-500 ' +
-  'placeholder:text-neutral-600 hover:border-ink/45 focus:border-accent-500 focus:outline-none ' +
+  'hover:border-ink/45 focus:border-accent-500 focus:outline-none ' +
   'disabled:cursor-not-allowed disabled:opacity-60 ' +
   'aria-[invalid=true]:border-danger-500 aria-[invalid=true]:bg-danger-50 ' +
   'data-[sugestao=true]:border-l-[3px] data-[sugestao=true]:border-l-accent-500 data-[sugestao=true]:bg-accent-100';
