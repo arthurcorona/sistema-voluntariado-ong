@@ -98,9 +98,24 @@ try {
   if (numero === '4567' && valor === '1.234,56' && data === '03/09/2026') ok('sugestões do XML corretas'); else falha('sugestões incorretas');
   const criar = page.locator('button:has-text("Emitente lido do arquivo sem cadastro")');
   if (await criar.count()) {
-    await criar.click();
+    // A página hidrata depois de carregar o PDF; um clique cedo demais se perde.
+    await page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => null);
+    for (let tentativa = 0; tentativa < 3; tentativa++) {
+      await criar.click();
+      const abriu = await page.waitForSelector('text=Novo fornecedor', { timeout: 3000 }).then(() => true).catch(() => false);
+      if (abriu) break;
+      const diag = await page.evaluate(() => ({
+        popoverNoDom: Array.from(document.querySelectorAll('p')).filter((p) => p.textContent === 'Novo fornecedor').length,
+        hint: Array.from(document.querySelectorAll('button')).filter((b) => b.textContent.includes('Emitente lido')).length,
+        ativo: (document.activeElement?.tagName ?? '') + '#' + (document.activeElement?.id ?? ''),
+        fornecedor: document.querySelector('#fornecedor')?.value,
+        overlay: !!document.querySelector('nextjs-portal'),
+      }));
+      console.log(`   tentativa ${tentativa + 1} sem popover: ${JSON.stringify(diag)}`);
+      await shot(`04-tentativa-${tentativa + 1}`);
+    }
     await page.waitForSelector('text=Novo fornecedor');
-    await page.click('button:has-text("Adicionar")');
+    await page.locator('button', { hasText: /^Adicionar$/ }).click(); // exato: há também "Adicionar arquivo" na tela
     await page.waitForSelector('text=Novo fornecedor', { state: 'detached', timeout: 15000 }).catch(() => null);
     const erroPopover = await page.locator('form [role=alert]').allTextContents();
     if (erroPopover.length) falha('popover de fornecedor mostrou erro: ' + erroPopover.join(' | '));
@@ -178,6 +193,23 @@ try {
   await page.reload();
   await page.waitForSelector('text=bloqueado para edição');
   ok('desbloqueio, edição e re-bloqueio ao salvar');
+
+  // 9b. Cancelar e reativar (terceiro estado, vermelho)
+  page.once('dialog', (d) => d.accept('Nota cancelada pelo fornecedor'));
+  await page.click('button:has-text("Cancelar lançamento")');
+  await page.waitForSelector('text=Nota cancelada pelo fornecedor');
+  if ((await page.locator('text=Cancelado').count()) > 0) ok('lançamento cancelado aparece como Cancelado com o motivo'); else falha('badge Cancelado não apareceu');
+  await page.goto(BASE + '/lancamentos?situacao=cancelado');
+  const cancelados = await page.locator('tbody tr').count();
+  await page.goto(BASE + '/exportar?de=2026-09-01&ate=2026-09-30');
+  const naPrevia = await page.locator('tbody tr:has-text("Resmas")').count();
+  if (cancelados === 1 && naPrevia === 0) ok('cancelado entra no filtro Cancelados e sai da prévia de exportação'); else falha(`cancelado: filtro=${cancelados} prévia=${naPrevia}`);
+  await page.goto(BASE + '/lancamentos?situacao=cancelado');
+  await page.click('tbody tr a');
+  await page.click('button:has-text("Reativar")');
+  await page.waitForSelector('text=Lançamento reativado');
+  await page.waitForSelector('text=bloqueado para edição');
+  ok('reativado volta ao estado anterior, ainda bloqueado por ter sido exportado');
   await shot('10-lancamento-exportado');
 
   // 10. Duplicado

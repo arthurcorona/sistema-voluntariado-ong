@@ -40,3 +40,8 @@ export const idsSchema = z.object({
 export const atribuirContaSchema = idsSchema.extend({
   conta_bancaria_id: uuid,
 });
+
+export const cancelarSchema = z.object({
+  id: uuid,
+  motivo: textoOpcional,
+});

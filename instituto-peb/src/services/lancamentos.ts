@@ -114,6 +114,7 @@ export async function carregarParaEdicao(db: DbClient, id: string): Promise<Lanc
 export async function salvar(db: DbClient, d: LancamentoFormData): Promise<{ proximoId: string | null }> {
   const atual = await repo.obter(db, d.id);
   if (!atual) throw new Error('Lançamento não encontrado.');
+  if (atual.cancelado) throw new Error('Lançamento cancelado. Reative antes de editar.');
 
   await repo.atualizar(db, d.id, {
     fornecedor_id: d.fornecedor_id,
@@ -149,6 +150,20 @@ export async function excluir(db: DbClient, id: string): Promise<void> {
 /** Desbloqueio explícito para editar lançamento exportado (RF037). */
 export function desbloquear(db: DbClient, id: string) {
   return repo.atualizar(db, id, { bloqueado: false });
+}
+
+/**
+ * Cancela sem apagar: sai da exportação, do painel e da fila de revisão,
+ * mas fica no histórico com autor, data e motivo. Permitido mesmo depois
+ * de exportado (nota cancelada pelo fornecedor). O trigger grava quem foi.
+ */
+export function cancelar(db: DbClient, id: string, motivo: string | null) {
+  return repo.atualizar(db, id, { cancelado_em: new Date().toISOString(), motivo_cancelamento: motivo });
+}
+
+/** Desfaz o cancelamento; o trigger limpa autor e motivo. */
+export function reativar(db: DbClient, id: string) {
+  return repo.atualizar(db, id, { cancelado_em: null });
 }
 
 export function listar(db: DbClient, filtros: FiltrosLancamentos) {

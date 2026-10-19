@@ -141,7 +141,8 @@ export function TabelaLancamentos({ linhas, contas, total }: { linhas: Lancament
             {linhas.map((l) => {
               const id = l.id ?? '';
               const on = selecionados.has(id);
-              const pend = pendenciasDe(l);
+              const cancelado = l.situacao === 'cancelado';
+              const pend = cancelado ? [] : pendenciasDe(l);
               return (
                 <tr
                   key={id}
@@ -150,7 +151,11 @@ export function TabelaLancamentos({ linhas, contas, total }: { linhas: Lancament
                     if ((e.target as HTMLElement).closest('a, button, input, label, select')) return;
                     router.push(`/lancamentos/${id}`);
                   }}
-                  className={cn('cursor-pointer border-b border-divider last:border-b-0', on ? 'bg-accent-100' : 'hover:bg-ink/4')}
+                  className={cn(
+                    'cursor-pointer border-b border-divider last:border-b-0',
+                    on ? 'bg-accent-100' : 'hover:bg-ink/4',
+                    cancelado && 'text-neutral-600',
+                  )}
                 >
                   <td className="px-3 py-3 text-center">
                     <input
@@ -185,7 +190,7 @@ export function TabelaLancamentos({ linhas, contas, total }: { linhas: Lancament
                   <td className="px-3 py-3">
                     <Link
                       href={`/lancamentos/${id}`}
-                      title={pend.length ? `Abrir · falta: ${pend.join(', ').toLowerCase()}` : 'Abrir lançamento'}
+                      title={cancelado ? 'Lançamento cancelado' : pend.length ? `Abrir · falta: ${pend.join(', ').toLowerCase()}` : 'Abrir lançamento'}
                       className="inline-flex flex-col items-start gap-1 hover:opacity-80"
                     >
                       <span className="flex items-center gap-2 whitespace-nowrap">

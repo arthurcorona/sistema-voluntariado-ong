@@ -20,7 +20,7 @@ export type LancamentoUpdate = TablesUpdate<'lancamentos'>;
 export type AnexoInsert = TablesInsert<'anexos'>;
 
 /** Valores possíveis de vw_lancamentos.situacao, em ordem crescente. */
-export const SITUACOES = ['pendente_revisao', 'incompleto', 'exportavel', 'completo'] as const;
+export const SITUACOES = ['pendente_revisao', 'incompleto', 'exportavel', 'completo', 'cancelado'] as const;
 export type Situacao = (typeof SITUACOES)[number];
 
 /** MIME types aceitos no envio; espelha o check em anexos e o bucket. */

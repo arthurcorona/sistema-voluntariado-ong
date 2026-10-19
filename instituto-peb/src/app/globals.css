@@ -39,6 +39,15 @@
   --color-danger-500: #9b1c2e;
   --color-danger-800: #7c1523;
 
+  /* Situação do lançamento: pendente (amarelo), concluído (verde); cancelado usa danger. */
+  --color-warning-100: #fbf1cf;
+  --color-warning-500: #c98f0a;
+  --color-warning-800: #6a4a02;
+
+  --color-success-100: #e3f2e7;
+  --color-success-500: #2f8a4a;
+  --color-success-800: #1c5a2f;
+
   --radius-sm: 2px;
   --radius-md: 4px;
   --radius-lg: 7px;

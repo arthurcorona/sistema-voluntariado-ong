@@ -1,0 +1,48 @@
+# Mantém o projeto Supabase (plano gratuito) acordado.
+#
+# O plano Free pausa o projeto após 7 dias sem nenhuma requisição à API.
+# Este job faz uma consulta mínima todos os dias. Sem sessão, o RLS devolve
+# lista vazia, mas a requisição conta como atividade.
+#
+# Secrets necessários (Settings → Secrets and variables → Actions):
+#   SUPABASE_URL       https://<ref>.supabase.co
+#   SUPABASE_ANON_KEY  chave "anon" / publishable do projeto
+#
+# ATENÇÃO: o GitHub desativa workflows agendados em repositórios sem commits
+# por 60 dias. Por isso existe também o cron do Vercel (vercel.json →
+# /api/manter-ativo). Se este workflow aparecer como "disabled", basta
+# reativá-lo na aba Actions.
+name: Manter Supabase ativo
+
+on:
+  schedule:
+    - cron: '17 9 * * *' # todo dia, 09:17 UTC (06:17 em Brasília)
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Consulta mínima na API do Supabase
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        run: |
+          set -eu
+          if [ -z "${SUPABASE_URL:-}" ] || [ -z "${SUPABASE_ANON_KEY:-}" ]; then
+            echo "::error::Defina os secrets SUPABASE_URL e SUPABASE_ANON_KEY no repositório."
+            exit 1
+          fi
+          codigo=$(curl -sS -o resposta.txt -w '%{http_code}' \
+            "${SUPABASE_URL%/}/rest/v1/contas_bancarias?select=id&limit=1" \
+            -H "apikey: ${SUPABASE_ANON_KEY}" \
+            -H "Authorization: Bearer ${SUPABASE_ANON_KEY}")
+          echo "HTTP ${codigo} · corpo: $(head -c 200 resposta.txt)"
+          if [ "${codigo}" != "200" ]; then
+            echo "::error::O Supabase respondeu ${codigo}. Se for 5xx, o projeto pode estar pausado: restaure no painel."
+            exit 1
+          fi
+          echo "Supabase ativo."

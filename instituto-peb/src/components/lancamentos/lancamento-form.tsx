@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState, useTransition } from 'react';
-import { desbloquearLancamento, excluirLancamento, proximoPendente, salvarLancamento } from '@/actions/lancamentos';
+import { cancelarLancamento, desbloquearLancamento, excluirLancamento, proximoPendente, reativarLancamento, salvarLancamento } from '@/actions/lancamentos';
 import { FornecedorCombobox } from '@/components/lancamentos/fornecedor-combobox';
 import { SituacaoBadge } from '@/components/lancamentos/situacao-badge';
 import { Alert } from '@/components/ui/alert';
@@ -57,10 +57,13 @@ export function LancamentoForm({
   const formRef = useRef<HTMLFormElement>(null);
 
   const bloqueado = Boolean(l.bloqueado);
+  const cancelado = Boolean(l.cancelado);
+  // Cancelado não se edita: nem campos, nem Lançar, nem Ctrl+Enter.
+  const travado = bloqueado || cancelado;
   const sugeridos = [fornecedorId, numero, serie, data, valor].filter((c) => c.origem === 'sugestao').length;
   const fornecedorSalvo = fornecedores.find((f) => f.id === l.fornecedor_id) ?? null;
   // O aviso descreve os dados salvos; atualiza depois de salvar/lançar a nota.
-  const pendencias = pendenciasDe(l);
+  const pendencias = cancelado ? [] : pendenciasDe(l);
 
   const set = (setter: (c: Campo) => void) => (valor: string) => setter({ valor, origem: 'digitado' });
 
@@ -113,6 +116,32 @@ export function LancamentoForm({
     });
   }
 
+  function cancelar() {
+    const motivo = prompt(
+      'Cancelar este lançamento? Ele sai da exportação e do painel, mas fica no histórico e pode ser reativado.\n\nMotivo (opcional):',
+    );
+    if (motivo === null) return;
+    start(async () => {
+      const r = await cancelarLancamento({ id: l.id, motivo });
+      if (!r.ok) setErro(r.error);
+      else {
+        onMensagem({ tone: 'success', texto: 'Lançamento cancelado.' });
+        router.refresh();
+      }
+    });
+  }
+
+  function reativar() {
+    start(async () => {
+      const r = await reativarLancamento({ id: l.id });
+      if (!r.ok) setErro(r.error);
+      else {
+        onMensagem({ tone: 'success', texto: 'Lançamento reativado.' });
+        router.refresh();
+      }
+    });
+  }
+
   function desbloquear() {
     if (!confirm('Este lançamento já foi enviado ao contador. Desbloquear para editar mesmo assim?')) return;
     start(async () => {
@@ -127,13 +156,13 @@ export function LancamentoForm({
     function onKey(e: KeyboardEvent) {
       if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
         e.preventDefault();
-        if (!bloqueado && !pending) submeter(true);
+        if (!travado && !pending) submeter(true);
       }
     }
     document.addEventListener('keydown', onKey);
     return () => document.removeEventListener('keydown', onKey);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [fornecedorId, numero, serie, data, valor, descricao, contaId, bloqueado, pending]);
+  }, [fornecedorId, numero, serie, data, valor, descricao, contaId, travado, pending]);
 
   const sug = (c: Campo) => c.origem === 'sugestao';
 
@@ -143,9 +172,25 @@ export function LancamentoForm({
       className="flex flex-col gap-4"
       onSubmit={(e) => {
         e.preventDefault();
-        if (!bloqueado) submeter(true);
+        if (!travado) submeter(true);
       }}
     >
+      {cancelado && (
+        <Alert tone="error">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <span>
+              Cancelado
+              {l.cancelado_em ? ` em ${formatDateBR(l.cancelado_em.slice(0, 10))}` : ''}
+              {l.cancelado_por_nome ? ` por ${l.cancelado_por_nome}` : ''}
+              {l.motivo_cancelamento ? `: ${l.motivo_cancelamento}.` : '.'} Fica fora da exportação e do painel.
+            </span>
+            <Button type="button" size="sm" variant="secondary" onClick={reativar} disabled={pending}>
+              Reativar
+            </Button>
+          </div>
+        </Alert>
+      )}
+
       {l.exportado && (
         <div className="rounded-md border border-neutral-400 bg-neutral-200 px-4 py-3 text-sm leading-relaxed">
           Este lançamento já saiu na exportação de{' '}
@@ -172,7 +217,7 @@ export function LancamentoForm({
             {l.serie_nota ? ` · série ${l.serie_nota}` : ''}
           </span>
         )}
-        {bloqueado && (
+        {bloqueado && !cancelado && (
           <Button type="button" size="sm" variant="secondary" className="ml-auto" onClick={desbloquear} disabled={pending}>
             Desbloquear para editar
           </Button>
@@ -193,7 +238,7 @@ export function LancamentoForm({
         <Alert tone="warning">Este lançamento está bloqueado para edição.</Alert>
       )}
 
-      {sugeridos > 0 && !bloqueado && (
+      {sugeridos > 0 && !travado && (
         <Alert tone="info">
           {sugeridos === 1 ? 'Um campo foi lido do arquivo e está marcado' : `${sugeridos} campos foram lidos do arquivo e estão marcados`} abaixo.
           Confira cada um antes de lançar; a leitura erra com alguma frequência em datas e valores.
@@ -202,7 +247,7 @@ export function LancamentoForm({
 
       {erro && <Alert tone="error">{erro}</Alert>}
 
-      <fieldset disabled={bloqueado || pending} className="grid grid-cols-2 gap-4 disabled:opacity-70">
+      <fieldset disabled={travado || pending} className="grid grid-cols-2 gap-4 disabled:opacity-70">
         <Field label="Fornecedor" htmlFor="fornecedor" error={fieldErrors.fornecedor_id} sugestao={sug(fornecedorId)} className="col-span-2">
           <FornecedorCombobox
             id="fornecedor"
@@ -251,11 +296,11 @@ export function LancamentoForm({
       </fieldset>
 
       <div className="mt-2 flex flex-wrap items-center gap-3 border-t border-divider pt-4">
-        <Button type="submit" size="lg" loading={pending} disabled={bloqueado} title="Ctrl+Enter">
+        <Button type="submit" size="lg" loading={pending} disabled={travado} title="Ctrl+Enter">
           {fila ? 'Lançar e ir para o próximo' : l.revisado_em ? 'Salvar' : 'Lançar'}
         </Button>
         {!l.revisado_em && (
-          <Button type="button" size="lg" variant="secondary" disabled={pending || bloqueado} onClick={() => submeter(false)}>
+          <Button type="button" size="lg" variant="secondary" disabled={pending || travado} onClick={() => submeter(false)}>
             Salvar sem lançar
           </Button>
         )}
@@ -265,6 +310,11 @@ export function LancamentoForm({
           </Button>
         )}
         <span className="flex-1" />
+        {!cancelado && (
+          <Button type="button" variant="ghost" size="sm" disabled={pending} onClick={cancelar} title="Sai da exportação e do painel; fica no histórico">
+            Cancelar lançamento
+          </Button>
+        )}
         {!l.exportado && (
           <Button type="button" variant="danger" size="sm" disabled={pending} onClick={excluir}>
             Excluir

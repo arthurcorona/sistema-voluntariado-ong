@@ -5,7 +5,7 @@ import { z } from 'zod';
 import { fail, invalid, ok, type ActionResult } from '@/lib/action-result';
 import { createClient } from '@/lib/supabase/server';
 import { uuid } from '@/lib/validation/comum';
-import { atribuirContaSchema, idsSchema, lancamentoFormSchema } from '@/lib/validation/lancamentos';
+import { atribuirContaSchema, cancelarSchema, idsSchema, lancamentoFormSchema } from '@/lib/validation/lancamentos';
 import * as service from '@/services/lancamentos';
 
 const idSchema = z.object({ id: uuid });
@@ -87,6 +87,32 @@ export async function excluirEmLote(input: unknown): Promise<ActionResult<{ excl
     const excluidos = await service.excluirEmLote(db, parsed.data.ids);
     revalidar();
     return ok({ excluidos });
+  } catch (e) {
+    return fail(e);
+  }
+}
+
+export async function cancelarLancamento(input: unknown): Promise<ActionResult<void>> {
+  const parsed = cancelarSchema.safeParse(input);
+  if (!parsed.success) return invalid(parsed.error);
+  try {
+    const db = await createClient();
+    await service.cancelar(db, parsed.data.id, parsed.data.motivo);
+    revalidar(parsed.data.id);
+    return ok(undefined);
+  } catch (e) {
+    return fail(e);
+  }
+}
+
+export async function reativarLancamento(input: unknown): Promise<ActionResult<void>> {
+  const parsed = idSchema.safeParse(input);
+  if (!parsed.success) return invalid(parsed.error);
+  try {
+    const db = await createClient();
+    await service.reativar(db, parsed.data.id);
+    revalidar(parsed.data.id);
+    return ok(undefined);
   } catch (e) {
     return fail(e);
   }

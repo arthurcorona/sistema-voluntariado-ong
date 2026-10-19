@@ -82,12 +82,15 @@ export default async function LancamentosPage({ searchParams }: { searchParams: 
         <div className="w-48">
           <Select
             name="situacao"
-            defaultValue={filtros.situacao === 'completo' ? 'completo' : filtros.situacao ? 'pendente' : ''}
+            defaultValue={
+              filtros.situacao === 'completo' || filtros.situacao === 'cancelado' ? filtros.situacao : filtros.situacao ? 'pendente' : ''
+            }
             aria-label="Situação"
           >
             <option value="">Todas as situações</option>
             <option value="pendente">Pendentes</option>
-            <option value="completo">Completos</option>
+            <option value="completo">Concluídos</option>
+            <option value="cancelado">Cancelados</option>
           </Select>
         </div>
         <Button type="submit" size="md" variant="secondary">

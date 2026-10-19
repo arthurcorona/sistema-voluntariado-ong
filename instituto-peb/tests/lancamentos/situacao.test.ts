@@ -14,6 +14,10 @@ describe('situação exibida', () => {
   it('só considera completo o estado completo do banco', () => {
     expect(situacaoTela('completo')).toBe('completo');
   });
+
+  it('cancelado é o terceiro estado, nunca pendente', () => {
+    expect(situacaoTela('cancelado')).toBe('cancelado');
+  });
 });
 
 describe('pendências dos dados salvos', () => {
@@ -44,13 +48,14 @@ describe('pendências dos dados salvos', () => {
 });
 
 describe('filtro e compatibilidade das URLs', () => {
-  it.each(['pendente', 'pendente_revisao', 'incompleto', 'exportavel', 'completo'])('aceita o filtro %s', (situacao) => {
+  it.each(['pendente', 'pendente_revisao', 'incompleto', 'exportavel', 'completo', 'cancelado'])('aceita o filtro %s', (situacao) => {
     expect(filtrosLancamentosSchema.parse({ situacao }).situacao).toBe(situacao);
   });
 
   it.each([
-    ['pendente', 'neq.completo'],
+    ['pendente', 'not.in.(completo,cancelado)'],
     ['completo', 'eq.completo'],
+    ['cancelado', 'eq.cancelado'],
     ['pendente_revisao', 'eq.pendente_revisao'],
   ])('envia %s ao Supabase com a condição correta', async (situacao, condicao) => {
     // Exercita o cliente Supabase real, interceptando apenas o transporte HTTP.

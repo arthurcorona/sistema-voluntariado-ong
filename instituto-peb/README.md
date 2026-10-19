@@ -46,3 +46,12 @@ Leia `CLAUDE.md`. Resumo: actions finas, regra em `services`, banco só em `repo
 1. Crie um operador de teste no Auth e informe `E2E_EMAIL` e `E2E_SENHA` no `.env.local`.
 2. Com o servidor rodando (`npm run dev`), limpe o banco de desenvolvimento: `E2E_PERMITIR_RESET=sim` no `.env.local` e `npm run e2e:reset`. **Isso apaga todos os dados.**
 3. `npm run e2e`. Capturas de tela e arquivos baixados ficam em `tests/e2e/saida/`.
+
+## Manter o Supabase ativo (plano gratuito)
+
+O plano Free pausa o projeto após 7 dias sem requisições. Dois mecanismos independentes evitam isso:
+
+- **GitHub Actions**: `.github/workflows/manter-supabase-ativo.yml` (na raiz do repositório) faz uma consulta diária. Precisa dos secrets `SUPABASE_URL` e `SUPABASE_ANON_KEY` em Settings → Secrets → Actions. O GitHub desativa agendamentos em repositórios sem commits por 60 dias; se isso acontecer, reative na aba Actions.
+- **Cron do Vercel**: `vercel.json` chama `/api/manter-ativo` todo dia. Defina `CRON_SECRET` nas variáveis de ambiente do projeto no Vercel para proteger a rota.
+
+Se o projeto chegar a pausar, restaure no painel do Supabase (Project → Restore); leva um ou dois minutos.

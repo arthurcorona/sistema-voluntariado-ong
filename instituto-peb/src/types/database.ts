@@ -206,6 +206,8 @@ export type Database = {
           atualizado_em: string
           atualizado_por: string | null
           bloqueado: boolean
+          cancelado_em: string | null
+          cancelado_por: string | null
           conta_bancaria_id: string | null
           criado_em: string
           criado_por: string | null
@@ -213,6 +215,7 @@ export type Database = {
           descricao: string | null
           fornecedor_id: string | null
           id: string
+          motivo_cancelamento: string | null
           numero_nota: string | null
           revisado_em: string | null
           revisado_por: string | null
@@ -223,6 +226,8 @@ export type Database = {
           atualizado_em?: string
           atualizado_por?: string | null
           bloqueado?: boolean
+          cancelado_em?: string | null
+          cancelado_por?: string | null
           conta_bancaria_id?: string | null
           criado_em?: string
           criado_por?: string | null
@@ -230,6 +235,7 @@ export type Database = {
           descricao?: string | null
           fornecedor_id?: string | null
           id?: string
+          motivo_cancelamento?: string | null
           numero_nota?: string | null
           revisado_em?: string | null
           revisado_por?: string | null
@@ -240,6 +246,8 @@ export type Database = {
           atualizado_em?: string
           atualizado_por?: string | null
           bloqueado?: boolean
+          cancelado_em?: string | null
+          cancelado_por?: string | null
           conta_bancaria_id?: string | null
           criado_em?: string
           criado_por?: string | null
@@ -247,6 +255,7 @@ export type Database = {
           descricao?: string | null
           fornecedor_id?: string | null
           id?: string
+          motivo_cancelamento?: string | null
           numero_nota?: string | null
           revisado_em?: string | null
           revisado_por?: string | null
@@ -257,6 +266,13 @@ export type Database = {
           {
             foreignKeyName: "lancamentos_atualizado_por_fkey"
             columns: ["atualizado_por"]
+            isOneToOne: false
+            referencedRelation: "perfis"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lancamentos_cancelado_por_fkey"
+            columns: ["cancelado_por"]
             isOneToOne: false
             referencedRelation: "perfis"
             referencedColumns: ["id"]
@@ -323,6 +339,10 @@ export type Database = {
           atualizado_por: string | null
           atualizado_por_nome: string | null
           bloqueado: boolean | null
+          cancelado: boolean | null
+          cancelado_em: string | null
+          cancelado_por: string | null
+          cancelado_por_nome: string | null
           completo: boolean | null
           conta_bancaria_id: string | null
           conta_bancaria_nome: string | null
@@ -337,6 +357,7 @@ export type Database = {
           fornecedor_id: string | null
           fornecedor_nome: string | null
           id: string | null
+          motivo_cancelamento: string | null
           numero_nota: string | null
           pendente_revisao: boolean | null
           revisado_em: string | null
@@ -351,6 +372,13 @@ export type Database = {
           {
             foreignKeyName: "lancamentos_atualizado_por_fkey"
             columns: ["atualizado_por"]
+            isOneToOne: false
+            referencedRelation: "perfis"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lancamentos_cancelado_por_fkey"
+            columns: ["cancelado_por"]
             isOneToOne: false
             referencedRelation: "perfis"
             referencedColumns: ["id"]

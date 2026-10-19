@@ -34,6 +34,7 @@ export async function proximoPendente(db: DbClient, aposId?: string): Promise<st
     .from('lancamentos')
     .select('id')
     .is('revisado_em', null)
+    .is('cancelado_em', null)
     .order('criado_em', { ascending: true })
     .limit(1);
   if (aposId) q = q.neq('id', aposId);
@@ -42,7 +43,11 @@ export async function proximoPendente(db: DbClient, aposId?: string): Promise<st
 }
 
 export async function contarPendentes(db: DbClient): Promise<number> {
-  const res = await db.from('lancamentos').select('id', { count: 'exact', head: true }).is('revisado_em', null);
+  const res = await db
+    .from('lancamentos')
+    .select('id', { count: 'exact', head: true })
+    .is('revisado_em', null)
+    .is('cancelado_em', null);
   check(res, 'lancamentos.contarPendentes');
   return res.count ?? 0;
 }
@@ -55,7 +60,8 @@ export async function listar(db: DbClient, f: FiltrosLancamentos): Promise<Pagin
   if (f.de) q = q.gte('data_nota', f.de);
   if (f.ate) q = q.lte('data_nota', f.ate);
   if (f.conta) q = q.eq('conta_bancaria_id', f.conta);
-  if (f.situacao === 'pendente') q = q.neq('situacao', 'completo');
+  // "Pendente" na tela = tudo que não está concluído nem cancelado.
+  if (f.situacao === 'pendente') q = q.not('situacao', 'in', '(completo,cancelado)');
   else if (f.situacao) q = q.eq('situacao', f.situacao);
   if (f.q) {
     // PostgREST usa vírgula e parênteses como sintaxe no .or(); tiramos do termo.
@@ -116,6 +122,7 @@ export async function listarResumoPeriodo(
       .from('vw_lancamentos')
       .select('valor_centavos, situacao')
       .not('revisado_em', 'is', null)
+      .is('cancelado_em', null)
       .gte('data_nota', de)
       .lte('data_nota', ate),
     'lancamentos.listarResumoPeriodo',
@@ -143,7 +150,7 @@ export async function listarPendencias(db: DbClient, limite: number): Promise<{ 
   const res = await db
     .from('vw_lancamentos')
     .select('*', { count: 'exact' })
-    .neq('situacao', 'completo')
+    .not('situacao', 'in', '(completo,cancelado)')
     .order('criado_em', { ascending: false })
     .limit(limite);
   return { linhas: unwrap(res, 'lancamentos.listarPendencias'), total: res.count ?? 0 };

@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { cn } from '@/lib/cn';
 
-type Tone = 'neutral' | 'accent' | 'muted' | 'alert' | 'danger';
+type Tone = 'neutral' | 'accent' | 'muted' | 'alert' | 'danger' | 'warning' | 'success';
 
 /* Etiquetas em caixa alta com traço, como no mockup. */
 const TONES: Record<Tone, string> = {
@@ -9,7 +9,9 @@ const TONES: Record<Tone, string> = {
   accent: 'border-accent-500 text-accent-800',
   muted: 'border-neutral-400 bg-neutral-200 text-neutral-800',
   alert: 'border-accent-500 bg-accent-100 text-accent-900',
-  danger: 'border-danger-500 text-danger-800',
+  danger: 'border-danger-500 bg-danger-100 text-danger-800',
+  warning: 'border-warning-500 bg-warning-100 text-warning-800',
+  success: 'border-success-500 bg-success-100 text-success-800',
 };
 
 export function Badge({ tone = 'neutral', children, className }: { tone?: Tone; children: ReactNode; className?: string }) {

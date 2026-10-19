@@ -27,6 +27,7 @@ Next.js (App Router, TypeScript, full-stack) · Supabase (Postgres, Auth, Storag
 - Exportação **inclui registros incompletos** (fornecedor + data + valor bastam). Pendências saem em coluna própria. Pedido do cliente; não "conserte".
 - Campo preenchido automaticamente aparece como sugestão pendente de conferência, visualmente distinto do digitado.
 - Lançamento exportado fica bloqueado; edição exige desbloqueio explícito.
+- Três estados na tela: Pendente (amarelo), Concluído (verde), Cancelado (vermelho). Cancelar não apaga: guarda autor, data e motivo, tira da exportação, do painel e da fila; pode ser reativado e é permitido mesmo após exportar.
 - Sem OCR. Imagem é preenchida à mão.
 - Fora de escopo (não construa): emissão de NF, integração contábil, leitura de e-mail, conciliação, contas a pagar, orçamento, mobile, rateio, relatórios/gráficos, perfis de permissão, entradas de recurso.
 
